@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(buffer).toString("base64");
     const mimeType = imageFile.type || "image/jpeg";
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent([
       { inlineData: { data: base64, mimeType } },
