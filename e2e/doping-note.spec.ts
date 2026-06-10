@@ -78,6 +78,57 @@ test("happy path", async ({ page }) => {
   await expect(page.getByTestId("print-report")).toBeVisible();
 });
 
+test("product-name lookup fills ingredient and dosage candidates", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("start-button").click();
+
+  await page.getByLabel("이름").fill("김도핑");
+  await page.getByLabel("생년월일").fill("2001-03-15");
+  await page.getByLabel("종목").fill("육상");
+  await page.getByRole("button", { name: "다음으로 이동" }).click();
+
+  await page.route("**/api/ocr", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        itemName: "타이레놀 이알",
+        ingredientName: "",
+        dosage: "",
+        hospitalName: "",
+        conditionName: "",
+        source: "gemini-vision"
+      })
+    });
+  });
+
+  await page.getByTestId("file-input").setInputFiles({
+    name: "tylenol-box.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+      "base64"
+    )
+  });
+  await page.getByTestId("upload-submit").click();
+
+  await expect(page).toHaveURL(/\/review/);
+  await expect(page.getByText("타이레놀8시간이알서방정")).toBeVisible();
+  await page.getByTestId("apply-medication-med-tylenol-er-650").click();
+  await expect(page.getByLabel("성분명")).toHaveValue("acetaminophen 650mg");
+  await expect(page.getByLabel("용량", { exact: true })).toHaveValue("1정당 650mg");
+  await page.getByTestId("review-submit").click();
+
+  await expect(page).toHaveURL(/\/result/);
+  await expect(page.getByText("acetaminophen").first()).toBeVisible();
+  await page.getByTestId("intake-status-taken").click();
+  await page.getByTestId("intake-save").click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await page.goto("/report?days=7");
+  await expect(page.getByTestId("report-view")).toContainText("타이레놀 이알");
+  await expect(page.getByTestId("report-view")).toContainText("acetaminophen");
+});
+
 test("rendered pages do not expose blocked copy", async ({ page }) => {
   for (const path of ["/", "/onboarding", "/upload", "/dashboard", "/report?days=7"]) {
     await page.goto(path);

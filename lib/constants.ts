@@ -19,7 +19,9 @@ export const STORAGE_KEYS = {
   currentItemId: `${STORAGE_PREFIX}current-item-id`,
   currentRiskId: `${STORAGE_PREFIX}current-risk-id`,
   athleteDb: `${STORAGE_PREFIX}athlete-db`,
-  sessionAthleteId: `${STORAGE_PREFIX}session-athlete-id`
+  sessionAthleteId: `${STORAGE_PREFIX}session-athlete-id`,
+  customMedicationProducts: `${STORAGE_PREFIX}custom-medication-products`,
+  medicationLookupCache: `${STORAGE_PREFIX}medication-lookup-cache`
 } as const;
 
 export const OFFICIAL_CHECK_LINKS = [

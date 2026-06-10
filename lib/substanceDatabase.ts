@@ -1115,7 +1115,16 @@ function normalize(value: string): string {
 }
 
 function containsTerm(target: string, term: string): boolean {
-  return normalize(target).includes(normalize(term));
+  const normalizedTerm = normalize(term);
+  if (/^[a-z0-9]+$/.test(normalizedTerm) && normalizedTerm.length <= 3) {
+    return target
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+      .some((token) => token === normalizedTerm);
+  }
+
+  return normalize(target).includes(normalizedTerm);
 }
 
 function getEntryTerms(entry: ProhibitedSubstanceEntry): string[] {

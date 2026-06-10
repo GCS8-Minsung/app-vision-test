@@ -6,7 +6,9 @@ import { MedicationForm, type MedicationFormValue } from "@/components/Medicatio
 import { StepIndicator } from "@/components/StepIndicator";
 import { parseCompoundIngredients } from "@/lib/compoundIngredients";
 import { createId } from "@/lib/ids";
-import { formatIngredients, searchMedicationProducts, type MedicationSearchResult } from "@/lib/medicationDatabase";
+import { formatIngredients } from "@/lib/medicationDatabase";
+import { searchMedicationCandidates, type MedicationLookupClientResult } from "@/lib/medicationLookupClient";
+import type { MedicationProductLookup } from "@/lib/medicationProviders/types";
 import { buildOcrFieldConfidence } from "@/lib/ocrConfidence";
 import { getHighestRiskLevel } from "@/lib/riskRanking";
 import { analyzeRisk } from "@/lib/riskEngine";
@@ -32,7 +34,11 @@ export default function ReviewPage() {
   const [value, setValue] = useState<MedicationFormValue>(EMPTY_FORM);
   const [ocrSourceLabel, setOcrSourceLabel] = useState("");
   const [confidence, setConfidence] = useState<OcrFieldConfidence>();
-  const [lookupResults, setLookupResults] = useState<MedicationSearchResult[]>([]);
+  const [lookupResults, setLookupResults] = useState<MedicationProductLookup[]>([]);
+  const [lookupStatus, setLookupStatus] = useState<MedicationLookupClientResult["status"]>("empty");
+  const [lookupMessage, setLookupMessage] = useState("");
+  const [pendingLookup, setPendingLookup] = useState(false);
+  const [pendingApply, setPendingApply] = useState<MedicationProductLookup | null>(null);
   const [verifiedFields, setVerifiedFields] = useState<VerificationKey[]>([]);
   const [error, setError] = useState("");
 
@@ -42,24 +48,53 @@ export default function ReviewPage() {
       setValue(draft);
       setOcrSourceLabel(getOcrSourceLabel(draft.source, draft.confidence));
       setConfidence(buildOcrFieldConfidence(draft));
-      setLookupResults(searchMedicationProducts(draft.itemName));
     }
   }, []);
 
   useEffect(() => {
-    setLookupResults(searchMedicationProducts(value.itemName));
+    const query = value.itemName.trim();
+    if (query.length < 2) {
+      setLookupResults([]);
+      setLookupStatus("empty");
+      setLookupMessage("");
+      return;
+    }
+
+    let cancelled = false;
+    setPendingLookup(true);
+    const timer = window.setTimeout(() => {
+      searchMedicationCandidates(query).then((result) => {
+        if (cancelled) return;
+        setLookupResults(result.results);
+        setLookupStatus(result.status);
+        setLookupMessage(result.message);
+        setPendingLookup(false);
+      });
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      setPendingLookup(false);
+    };
   }, [value.itemName]);
 
-  function applyMedicationLookup(result: MedicationSearchResult) {
+  function applyMedicationLookup(result: MedicationProductLookup) {
+    if ((value.ingredientName.trim() || value.dosage.trim()) && pendingApply?.id !== result.id) {
+      setPendingApply(result);
+      return;
+    }
+
     const next = {
       ...value,
-      ingredientName: formatIngredients(result.entry.ingredients),
-      dosage: result.entry.dosage ?? value.dosage,
-      itemName: value.itemName.trim() || result.entry.productName
+      ingredientName: formatIngredients(result.ingredients),
+      dosage: result.dosage ?? value.dosage,
+      itemName: value.itemName.trim() || result.productName
     };
     setValue(next);
     setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
     setVerifiedFields((current) => Array.from(new Set([...current, "ingredient_checked", "dosage_checked"])));
+    setPendingApply(null);
   }
 
   function handleSubmit() {
@@ -152,7 +187,7 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {lookupResults.length > 0 && (
+        {(lookupResults.length > 0 || pendingLookup || lookupMessage) && (
           <div
             className="rounded-xl p-3 text-sm"
             style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
@@ -160,35 +195,47 @@ export default function ReviewPage() {
             <div className="mb-3">
               <p className="font-semibold text-[#e6e0e9]">약 이름 기반 DB 검색 후보</p>
               <p className="mt-1 text-xs text-[#948e9c]">
-                OCR 정보가 부족하면 후보를 적용한 뒤 실제 포장·처방전과 다시 대조하세요.
+                {pendingLookup ? "후보를 찾는 중입니다." : lookupMessage || "OCR 정보가 부족하면 후보를 적용한 뒤 실제 포장·처방전과 다시 대조하세요."}
               </p>
+              {lookupStatus !== "empty" && (
+                <span
+                  className="mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  style={{ background: "rgba(207,188,255,0.1)", color: "#cfbcff", border: "1px solid rgba(207,188,255,0.25)" }}
+                >
+                  {lookupStatus}
+                </span>
+              )}
             </div>
             <div className="space-y-2">
               {lookupResults.map((result) => (
                 <div
-                  key={result.entry.id}
+                  key={result.id}
                   className="rounded-xl p-3"
                   style={{ background: "#141218", border: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="font-semibold text-[#e6e0e9]">{result.entry.productName}</p>
+                      <p className="font-semibold text-[#e6e0e9]">{result.productName}</p>
                       <p className="mt-1 text-xs text-[#cbc4d2]">
-                        성분: {formatIngredients(result.entry.ingredients)}
+                        성분: {formatIngredients(result.ingredients)}
                       </p>
                       <p className="mt-0.5 text-xs text-[#cbc4d2]">
-                        용량: {result.entry.dosage ?? "제품 이미지 또는 처방전에서 확인 필요"}
+                        용량: {result.dosage ?? "제품 이미지 또는 처방전에서 확인 필요"}
                       </p>
                       <p className="mt-0.5 text-xs text-[#948e9c]">
                         매칭: {result.matchedName} · 점수 {result.score}
                       </p>
+                      <p className="mt-0.5 text-xs text-[#948e9c]">
+                        출처: {result.lookupSource.providerName} · {new Date(result.lookupSource.checkedAt).toLocaleString("ko-KR")}
+                      </p>
                     </div>
                     <button
+                      data-testid={`apply-medication-${result.id}`}
                       type="button"
                       className="secondary-button px-3 text-xs"
                       onClick={() => applyMedicationLookup(result)}
                     >
-                      성분·용량 적용
+                      {pendingApply?.id === result.id ? "한 번 더 눌러 적용" : "성분·용량 적용"}
                     </button>
                   </div>
                 </div>

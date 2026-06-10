@@ -32,6 +32,7 @@ describe("substance database", () => {
 
   it("includes acetaminophen as a common medicine-box ingredient", () => {
     expect(findSubstanceEntry({ itemName: "", ingredientName: "아세트아미노펜(USP)" })?.primaryName).toBe("acetaminophen");
+    expect(findSubstanceEntry({ itemName: "타이레놀 이알", ingredientName: "acetaminophen 650mg" })?.primaryName).toBe("acetaminophen");
   });
 
   it("connects expanded product aliases to WADA/KADA seed entries", () => {

@@ -2,14 +2,25 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { Check, Edit2, Plus, Shield, Trash2, Users, X } from "lucide-react";
+import { Check, Database, Download, Edit2, Plus, Shield, Trash2, Upload, Users, X } from "lucide-react";
 import { athleteDb } from "@/lib/athleteDb";
 import { ADMIN_PASSCODE, APP_NAME } from "@/lib/constants";
+import { customMedicationProducts } from "@/lib/customMedicationProducts";
 import { formatPhone } from "@/lib/formatPhone";
 import { createId } from "@/lib/ids";
+import type { CustomMedicationProduct } from "@/lib/medicationProviders/types";
 import type { RegisteredAthlete } from "@/lib/types";
 
 const EMPTY = { name: "", birthDate: "", phone: "", sport: "", teamName: "" };
+const EMPTY_MEDICATION = {
+  productName: "",
+  aliases: "",
+  ingredients: "",
+  dosage: "",
+  form: "",
+  sourceNames: "사용자 보강 DB",
+  note: ""
+};
 
 const S = {
   card: {
@@ -38,10 +49,19 @@ export default function AdminPage() {
   const [form,      setForm]      = useState(EMPTY);
   const [showForm,  setShowForm]  = useState(false);
   const [feedback,  setFeedback]  = useState("");
+  const [medications, setMedications] = useState<CustomMedicationProduct[]>([]);
+  const [medicationForm, setMedicationForm] = useState(EMPTY_MEDICATION);
+  const [medicationJson, setMedicationJson] = useState("");
 
-  useEffect(() => { if (authed) setAthletes(athleteDb.getAll()); }, [authed]);
+  useEffect(() => {
+    if (authed) {
+      setAthletes(athleteDb.getAll());
+      setMedications(customMedicationProducts.getAll());
+    }
+  }, [authed]);
 
   function refresh() { setAthletes(athleteDb.getAll()); }
+  function refreshMedications() { setMedications(customMedicationProducts.getAll()); }
 
   function flash(msg: string) {
     setFeedback(msg);
@@ -82,6 +102,52 @@ export default function AdminPage() {
 
   function handleSeed() {
     athleteDb.seedDemo(); refresh(); flash("데모 데이터 5명이 추가되었습니다.");
+  }
+
+  function handleMedicationSave(e: FormEvent) {
+    e.preventDefault();
+    if (!medicationForm.productName.trim() || !medicationForm.ingredients.trim()) return;
+    const ingredients = medicationForm.ingredients
+      .split(/\s*(?:\+|,|，|;|；|\n)\s*/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const dosage = part.match(/(\d+(?:\.\d+)?\s?(?:mg|㎎|mcg|μg|g|ml|iu|정|캡슐))/i)?.[1]?.replace(/\s+/g, "");
+        return {
+          name: part.replace(/(\d+(?:\.\d+)?\s?(?:mg|㎎|mcg|μg|g|ml|iu|정|캡슐))/i, "").trim(),
+          dosage
+        };
+      })
+      .filter((ingredient) => ingredient.name);
+
+    customMedicationProducts.save({
+      id: createId("custom-med"),
+      productName: medicationForm.productName.trim(),
+      aliases: medicationForm.aliases.split(",").map((alias) => alias.trim()).filter(Boolean),
+      ingredients,
+      dosage: medicationForm.dosage.trim() || undefined,
+      form: medicationForm.form.trim() || undefined,
+      sourceNames: medicationForm.sourceNames.split(",").map((source) => source.trim()).filter(Boolean),
+      note: medicationForm.note.trim() || "관리자 보강 후보"
+    });
+    setMedicationForm(EMPTY_MEDICATION);
+    refreshMedications();
+    flash("의약품 후보가 보강 DB에 추가되었습니다.");
+  }
+
+  function handleMedicationImport() {
+    try {
+      const count = customMedicationProducts.importJson(medicationJson);
+      refreshMedications();
+      flash(`${count}개 의약품 후보를 가져왔습니다.`);
+    } catch {
+      flash("JSON 형식을 확인해주세요.");
+    }
+  }
+
+  function handleMedicationExport() {
+    setMedicationJson(customMedicationProducts.exportJson());
+    flash("의약품 보강 DB를 JSON으로 내보냈습니다.");
   }
 
   /* ── Passcode gate ─────────────────────────────── */
@@ -271,6 +337,89 @@ export default function AdminPage() {
             선수는 <strong style={{ color: "#e6e0e9" }}>이름 + 생년월일 + 전화번호</strong>로 로그인합니다.
             전화번호는 하이픈(-)을 자동으로 입력합니다.
           </p>
+        </div>
+
+        {/* Medication seed manager */}
+        <div style={{ ...S.card, padding: 24, marginTop: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <Database size={18} color="#cfbcff" />
+            <div>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#e6e0e9" }}>의약품 seed DB 관리</h2>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#948e9c" }}>
+                제품명만 인식된 경우 성분·용량 후보를 보강하는 사용자 DB입니다.
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleMedicationSave}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
+              <div>
+                <label htmlFor="med-product" style={S.label}>제품명 *</label>
+                <input id="med-product" style={S.input} value={medicationForm.productName} onChange={(e) => setMedicationForm({ ...medicationForm, productName: e.target.value })} required />
+              </div>
+              <div>
+                <label htmlFor="med-aliases" style={S.label}>alias, 쉼표 구분</label>
+                <input id="med-aliases" style={S.input} value={medicationForm.aliases} onChange={(e) => setMedicationForm({ ...medicationForm, aliases: e.target.value })} />
+              </div>
+              <div>
+                <label htmlFor="med-ingredients" style={S.label}>성분 *</label>
+                <input id="med-ingredients" placeholder="acetaminophen 650mg + caffeine" style={S.input} value={medicationForm.ingredients} onChange={(e) => setMedicationForm({ ...medicationForm, ingredients: e.target.value })} required />
+              </div>
+              <div>
+                <label htmlFor="med-dosage" style={S.label}>용량/함량</label>
+                <input id="med-dosage" placeholder="1정당 650mg" style={S.input} value={medicationForm.dosage} onChange={(e) => setMedicationForm({ ...medicationForm, dosage: e.target.value })} />
+              </div>
+              <div>
+                <label htmlFor="med-form" style={S.label}>제형</label>
+                <input id="med-form" placeholder="정제, 캡슐, 흡입제" style={S.input} value={medicationForm.form} onChange={(e) => setMedicationForm({ ...medicationForm, form: e.target.value })} />
+              </div>
+              <div>
+                <label htmlFor="med-sources" style={S.label}>출처, 쉼표 구분</label>
+                <input id="med-sources" style={S.input} value={medicationForm.sourceNames} onChange={(e) => setMedicationForm({ ...medicationForm, sourceNames: e.target.value })} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label htmlFor="med-note" style={S.label}>메모</label>
+                <input id="med-note" style={S.input} value={medicationForm.note} onChange={(e) => setMedicationForm({ ...medicationForm, note: e.target.value })} />
+              </div>
+            </div>
+            <button type="submit" className="primary-button" style={{ marginTop: 16 }}>
+              <Plus size={15} /> 의약품 후보 추가
+            </button>
+          </form>
+
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 12, marginTop: 20 }}>
+            <label htmlFor="med-json" style={S.label}>JSON import / export</label>
+            <textarea
+              id="med-json"
+              className="form-input"
+              style={{ minHeight: 120, resize: "vertical" }}
+              value={medicationJson}
+              onChange={(e) => setMedicationJson(e.target.value)}
+            />
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button type="button" className="secondary-button" onClick={handleMedicationExport}>
+                <Download size={15} /> JSON 내보내기
+              </button>
+              <button type="button" className="secondary-button" onClick={handleMedicationImport}>
+                <Upload size={15} /> JSON 가져오기
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 18 }}>
+            <p style={S.label}>사용자 보강 후보 {medications.length}개</p>
+            <div style={{ display: "grid", gap: 8 }}>
+              {medications.slice(0, 8).map((medication) => (
+                <div key={medication.id} style={{ padding: 12, borderRadius: 12, background: "#1d1b20", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <p style={{ margin: 0, fontWeight: 700, color: "#e6e0e9" }}>{medication.productName}</p>
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "#cbc4d2" }}>
+                    {medication.ingredients.map((ingredient) => `${ingredient.name}${ingredient.dosage ? ` ${ingredient.dosage}` : ""}`).join(" + ")}
+                    {medication.dosage ? ` · ${medication.dosage}` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
