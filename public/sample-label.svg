@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="샘플 성분표">
+  <rect width="640" height="420" fill="#eef6f5"/>
+  <rect x="78" y="60" width="484" height="300" rx="16" fill="#fff" stroke="#99b8b4"/>
+  <text x="115" y="120" fill="#202124" font-family="Arial, sans-serif" font-size="30" font-weight="700">성분표 샘플</text>
+  <text x="115" y="190" fill="#57534e" font-family="Arial, sans-serif" font-size="24">제품명: 카페인 정</text>
+  <text x="115" y="238" fill="#57534e" font-family="Arial, sans-serif" font-size="24">성분명: caffeine</text>
+  <text x="115" y="286" fill="#57534e" font-family="Arial, sans-serif" font-size="24">용량: 100mg</text>
+</svg>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>도핑수첩 - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "inverse-on-surface": "#322f35",
+                        "background": "#141218",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#3b383e",
+                        "surface-tint": "#cfbcff",
+                        "on-tertiary": "#3e2e00",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#e0d2ff",
+                        "inverse-primary": "#6750a4",
+                        "on-secondary": "#342b4b",
+                        "primary-fixed": "#e9ddff",
+                        "tertiary": "#e7c365",
+                        "surface-container-highest": "#36343a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "on-tertiary-container": "#503d00",
+                        "surface-container-low": "#1d1b20",
+                        "inverse-surface": "#e6e0e9",
+                        "surface-variant": "#36343a",
+                        "outline-variant": "#494551",
+                        "on-secondary-fixed": "#1f1635",
+                        "surface-dim": "#141218",
+                        "primary-container": "#6750a4",
+                        "on-surface": "#e6e0e9",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary": "#cdc0e9",
+                        "secondary-container": "#4d4465",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline": "#948e9c",
+                        "surface-container": "#211f24",
+                        "tertiary-container": "#c9a74d",
+                        "error": "#ffb4ab",
+                        "surface": "#141218",
+                        "surface-container-high": "#2b292f",
+                        "on-secondary-container": "#bfb2da",
+                        "on-background": "#e6e0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "on-surface-variant": "#cbc4d2",
+                        "on-primary-fixed": "#22005d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-padding": "24px",
+                        "max-width": "1280px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "headline-xl": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-mono": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.4", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #26313A; /* Global background as per style guide */
+            color: theme('colors.on-background');
+        }
+        .glass-card {
+            background-color: #303B45;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(12px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, theme('colors.primary') 0%, #7C4DFF 100%);
+        }
+        .primary-gradient-text {
+            background: linear-gradient(135deg, theme('colors.primary') 0%, #7C4DFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 15px rgba(124, 77, 255, 0.5);
+        }
+        .card-hover:hover {
+            background-color: #35414d;
+            border: 1px solid rgba(124, 77, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pt-16 pb-24 md:pb-0 md:pl-80">
+<!-- TopAppBar (Mobile & Desktop Header) -->
+<header class="bg-surface dark:bg-surface-dim fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface-container-low dark:bg-surface-container-lowest shadow-sm md:pl-80 transition-all">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface dark:text-on-background">도핑수첩</h1>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</header>
+<!-- NavigationDrawer (Desktop Sidebar) -->
+<aside class="hidden md:flex flex-col gap-2 p-4 bg-surface-container dark:bg-surface-container-low text-primary dark:text-primary-fixed bg-surface-container dark:bg-surface-container-low backdrop-blur-md shadow-xl h-full w-80 rounded-r-3xl fixed top-0 left-0 z-40 pt-20">
+<div class="flex items-center gap-4 mb-8 px-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+<img alt="Athlete Profile" class="w-full h-full object-cover" data-alt="A professional studio portrait of a confident athlete looking directly at the camera. The lighting is dramatic and moody, emphasizing a serious, focused expression. The color palette features deep blacks and crisp whites, aligning with a high-tech corporate sports aesthetic. The mood conveys precision and determination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGqW9kgxYScLwGctZVj73QmG9UF8k9_QpKDKTrUMSG_aIi2j0g-ueHhp4p8XnY1fecQBApEuL3zAPbhuE-FIDUHuUxhQUtKi88kBWlsTW51JNLBnGqKln6-cBudULmRul_8JRVR2ywGcXVLbooMIHWIESMjjwsIn3YS09Gfkcxah3fWTQ3UcxFItb-FRrjUy23DcT2NRtNbTsyX-XpTla3DkGhMbm9KUwqNXN_xxOHeDGBMC5HsLXaM1Teoe1KdWD1w-NK26er5N0"/>
+</div>
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Athlete Name</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">National Team</p>
+<p class="text-label-mono font-label-mono text-primary/70 mt-1">ID: 2024-KR-01</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary/10 font-bold rounded-xl Active: scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-body-md font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">search_check</span>
+<span class="text-body-md font-body-md">Substance Check</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="text-body-md font-body-md">Education</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">emergency</span>
+<span class="text-body-md font-body-md">Emergency Contact</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-body-md font-body-md">Help Center</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin-mobile md:px-margin-desktop py-8 max-w-max-width mx-auto w-full flex flex-col gap-8">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div>
+<h2 class="text-headline-xl font-headline-xl text-on-surface mb-2">김도핑 선수의 복용 기록</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+                    2023년 10월 24일 (오늘)
+                </p>
+</div>
+<!-- Report Actions -->
+<div class="flex bg-[#1E262D] rounded-full p-1 border border-[#3D4A56]">
+<button class="px-4 py-1.5 rounded-full text-body-sm font-body-sm text-on-surface bg-[#303B45] shadow-sm transition-all">7일</button>
+<button class="px-4 py-1.5 rounded-full text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-all">14일</button>
+<button class="px-4 py-1.5 rounded-full text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-all">30일</button>
+</div>
+</section>
+<!-- KPI Widgets Grid -->
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-gutter">
+<!-- Widget 1: Total -->
+<div class="glass-card p-6 flex flex-col justify-between card-hover transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-3xl">medical_information</span>
+<span class="text-label-mono font-label-mono text-on-surface-variant">RECENT 7 DAYS</span>
+</div>
+<div>
+<h3 class="text-headline-lg font-headline-lg text-on-surface mb-1">12</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Total Records</p>
+</div>
+</div>
+<!-- Widget 2: Review (Amber) -->
+<div class="glass-card p-6 flex flex-col justify-between card-hover transition-all border border-tertiary/20">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-tertiary text-3xl">warning</span>
+<div class="w-12 h-12 rounded-full border-4 border-[#1E262D] border-t-tertiary flex items-center justify-center transform rotate-45"></div>
+</div>
+<div>
+<h3 class="text-headline-lg font-headline-lg text-tertiary mb-1">3</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Needs Review</p>
+</div>
+</div>
+<!-- Widget 3: High Risk (Red) -->
+<div class="glass-card p-6 flex flex-col justify-between card-hover transition-all border border-error/20">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-error text-3xl">dangerous</span>
+<svg class="w-12 h-12 text-error" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+</svg>
+</div>
+<div>
+<h3 class="text-headline-lg font-headline-lg text-error mb-1">1</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">High Risk Candidate</p>
+</div>
+</div>
+<!-- Widget 4: Indeterminable (Gray) -->
+<div class="glass-card p-6 flex flex-col justify-between card-hover transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">help_outline</span>
+<span class="text-label-mono font-label-mono text-on-surface-variant">PENDING</span>
+</div>
+<div>
+<h3 class="text-headline-lg font-headline-lg text-on-surface-variant mb-1">2</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Indeterminable</p>
+</div>
+</div>
+</section>
+<!-- Timeline / Recent Records Section -->
+<section class="glass-card p-6 md:p-8 flex flex-col gap-6">
+<div class="flex justify-between items-center pb-4 border-b border-[#3D4A56]">
+<h3 class="text-headline-md font-headline-md text-on-surface">최근 등록 내역</h3>
+<button class="text-primary hover:text-primary-fixed transition-colors text-body-sm font-body-sm font-medium">View All</button>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Timeline Item 1 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#35414d] transition-colors border border-transparent hover:border-[#3D4A56]">
+<div class="w-16 h-16 rounded-lg bg-[#1E262D] overflow-hidden flex-shrink-0">
+<img alt="Medicine Box" class="w-full h-full object-cover opacity-80" data-alt="A close-up photograph of a generic pharmaceutical blister pack and medicine box on a dark, sleek table. The lighting is cool and analytical, highlighting the texture of the foil and cardboard. The overarching style is modern medical, clinical, and precise, aligning with a high-tech dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdXbVG4In8pjwnyEpP4ShkD7R8GLWBeUZqniQBXCSFZkJsUPtTGvZ_OH06Ki3Nn55AaROUU0f9sbQoDPgwXf0gVDiPBRJeEezWi6mzS36KhcKZVocjxZNOhAH2EGbGRq3bWqZfOKSb4aUaGitDauDyRPGvmJfRs3LyMhfav6jwjecbcPKUktOuoYVKotb-DsewPTN_F2RZAs67PMLMCWf2W9ARWxkEuh6pP-df7-Q_BLza2A5STYtrDYOUDd5CyTS4pGrCwvT4Aiw"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-body-lg font-body-lg text-on-surface font-semibold truncate">타이레놀 500mg</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant truncate">오전 08:30 • 두통 완화</p>
+</div>
+<div class="flex flex-col items-end gap-2 flex-shrink-0">
+<span class="px-3 py-1 rounded-full text-label-mono font-label-mono bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Safe
+                        </span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="h-px bg-[#3D4A56] w-full"></div>
+<!-- Timeline Item 2 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#35414d] transition-colors border border-transparent hover:border-[#3D4A56]">
+<div class="w-16 h-16 rounded-lg bg-[#1E262D] overflow-hidden flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant">prescriptions</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-body-lg font-body-lg text-on-surface font-semibold truncate">종합감기약 (약국 조제)</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant truncate">어제 오후 19:15 • 감기 증상</p>
+</div>
+<div class="flex flex-col items-end gap-2 flex-shrink-0">
+<span class="px-3 py-1 rounded-full text-label-mono font-label-mono bg-tertiary/10 text-tertiary border border-tertiary/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary inline-block"></span> Review
+                        </span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="h-px bg-[#3D4A56] w-full"></div>
+<!-- Timeline Item 3 -->
+<div class="flex items-center gap-4 p-4 rounded-xl hover:bg-[#35414d] transition-colors border border-transparent hover:border-[#3D4A56]">
+<div class="w-16 h-16 rounded-lg bg-[#1E262D] overflow-hidden flex-shrink-0">
+<img alt="Supplement Bottle" class="w-full h-full object-cover opacity-80" data-alt="A macro shot of a sleek, dark-colored supplement bottle resting on a reflective glass surface. The lighting is cinematic with a subtle violet ambient glow in the background. The aesthetic is high-end, analytical, and modern, fitting seamlessly into a dark-mode sports technology interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkNvCCJNeKX7RGuXRoGqzDrX7K3q84dgs6vxZW8BfUQsifnz93hCSIRZmpoGMvR2r7A3oWTp8GW9oc5vc1Q0sXkpSDXZEfRoOqyrAWhfZOVzca-45f68PBzEFRCTBufGX8zzwyvmakY4RZunq3y4imig4ofbf5Avu1zXV-Kn1vouzUj4bEw8nQVTQro7YVfE1LCKBY2CNOyQSF7B2FMt1SfAbrf_5l_prOi0NyOayeb2IpyL0S2D5wki30Yzj-tGsCcrGiYNN5yzs"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-body-lg font-body-lg text-on-surface font-semibold truncate">해외 직구 단백질 보충제</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant truncate">10월 22일 • 성분 불상</p>
+</div>
+<div class="flex flex-col items-end gap-2 flex-shrink-0">
+<span class="px-3 py-1 rounded-full text-label-mono font-label-mono bg-error/10 text-error border border-error/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error inline-block"></span> High Risk
+                        </span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (Mobile) & Fixed Main CTA (Desktop) -->
+<div class="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-40">
+<button class="primary-gradient text-white rounded-full px-6 py-4 flex items-center gap-2 shadow-lg btn-glow transition-all hover:scale-105 active:scale-95 group font-body-md font-semibold">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
+            새 기록 추가
+        </button>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface-container dark:bg-surface-container-high text-primary dark:text-primary-fixed-dim bg-surface-container-high dark:bg-surface-container-highest backdrop-blur-xl shadow-[0_-4px_12px_rgba(0,0,0,0.15)] docked full-width bottom-0 rounded-t-xl fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe">
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-secondary-container text-on-primary-container dark:text-on-secondary-container rounded-full px-4 py-1 hover:scale-105 transition-transform Active: scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-label-mono font-label-mono mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-label-mono font-label-mono mt-1">Upload</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-mono font-label-mono mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-mono font-label-mono mt-1">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-mono font-label-mono mt-1">Settings</span>
+</a>
+</nav>
+</body></html>

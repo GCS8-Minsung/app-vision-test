@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>도핑수첩 - 확인 결과</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "inverse-on-surface": "#322f35",
+                        "background": "#141218",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#3b383e",
+                        "surface-tint": "#cfbcff",
+                        "on-tertiary": "#3e2e00",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#e0d2ff",
+                        "inverse-primary": "#6750a4",
+                        "on-secondary": "#342b4b",
+                        "primary-fixed": "#e9ddff",
+                        "tertiary": "#e7c365",
+                        "surface-container-highest": "#36343a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "on-tertiary-container": "#503d00",
+                        "surface-container-low": "#1d1b20",
+                        "inverse-surface": "#e6e0e9",
+                        "surface-variant": "#36343a",
+                        "outline-variant": "#494551",
+                        "on-secondary-fixed": "#1f1635",
+                        "surface-dim": "#141218",
+                        "primary-container": "#6750a4",
+                        "on-surface": "#e6e0e9",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary": "#cdc0e9",
+                        "secondary-container": "#4d4465",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline": "#948e9c",
+                        "surface-container": "#211f24",
+                        "tertiary-container": "#c9a74d",
+                        "error": "#ffb4ab",
+                        "surface": "#141218",
+                        "surface-container-high": "#2b292f",
+                        "on-secondary-container": "#bfb2da",
+                        "on-background": "#e6e0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "on-surface-variant": "#cbc4d2",
+                        "on-primary-fixed": "#22005d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-padding": "24px",
+                        "max-width": "1280px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                        "headline-xl": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-mono": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Custom UI Gradients & Effects */
+        .grada-card-surface {
+            background-color: #303B45;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .grada-input-surface {
+            background-color: #1E262D;
+            border-color: #3D4A56;
+        }
+        
+        .grada-input-surface:focus-within {
+            border-color: #7C4DFF;
+            box-shadow: 0 0 8px rgba(124, 77, 255, 0.4);
+        }
+
+        .grada-gradient-primary {
+            background: linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%);
+        }
+        
+        .grada-gradient-button {
+            background: linear-gradient(90deg, #cfbcff 0%, #a881af 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .grada-gradient-button:hover {
+            box-shadow: 0 0 15px rgba(207, 188, 255, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        .grada-glass-panel {
+            background: rgba(48, 59, 69, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .radio-custom:checked + div {
+            border-color: #cfbcff;
+            background-color: rgba(207, 188, 255, 0.1);
+        }
+        
+        .radio-custom:checked + div .radio-inner {
+            background-color: #cfbcff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#26313A] text-on-surface min-h-screen pb-24 md:pb-0 md:pl-80 font-body-md antialiased selection:bg-primary/30 selection:text-primary">
+<!-- Desktop Navigation Drawer (Hidden on Mobile) -->
+<aside class="hidden md:flex fixed top-0 left-0 h-full w-80 rounded-r-3xl bg-surface-container dark:bg-surface-container-low backdrop-blur-md shadow-xl flex-col gap-2 p-4 z-40">
+<!-- Header Profile Area -->
+<div class="flex items-center gap-4 mb-8 p-2">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-surface-variant flex-shrink-0">
+<img alt="Athlete Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a young athlete, well-lit, looking determined against a neutral background. The lighting is soft and studio-quality. The color palette is natural but complements a high-tech dark mode UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUSlZM6ek9egpc8yst6YZkHaP0CcgxzjjwCWRyJa7fF_rZktYRz41EgtdCq89-vPP89DXtsHbxPcD7RqpXrNkgLdaLIOXvR309QH0cxwlu8DiwDKnG0vOcEiFroRvi5iz2nXC6-85hMpo2lUt5Lsq6G556UgH3-nPpL-eOgAMbTEk2SNyNUM8s0NGBShxgj3RVvXbxF0IV_9E4EishCr7rZc0U_5DAKfMAMtjUQWVz2v60WepFPyHgQlJY5W2q9atG5UTrJNhjcV0"/>
+</div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-primary dark:text-primary-fixed">Athlete Name</span>
+<span class="text-label-mono font-label-mono text-on-surface-variant">National Team</span>
+<span class="text-label-mono font-label-mono text-outline text-[10px]">ID: 2024-KR-01</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 text-body-md font-body-md text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-body-md font-body-md text-primary bg-primary/10 font-bold rounded-xl active scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="search_check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">search_check</span>
+                Substance Check
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-body-md font-body-md text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="school">school</span>
+                Education
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-body-md font-body-md text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="emergency">emergency</span>
+                Emergency Contact
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-body-md font-body-md text-on-surface-variant hover:bg-surface-variant/50 hover:bg-primary/5 transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="help">help</span>
+                Help Center
+            </a>
+</nav>
+</aside>
+<!-- Mobile Top App Bar -->
+<header class="md:hidden fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface dark:bg-surface-dim bg-surface-container-low dark:bg-surface-container-lowest shadow-sm transition-colors duration-200">
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface dark:text-on-background tracking-tight">도핑수첩</h1>
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop pt-24 md:pt-12 pb-12">
+<!-- Page Context Header -->
+<div class="mb-8 flex items-center justify-between">
+<div>
+<p class="text-label-mono font-label-mono text-outline mb-1 uppercase tracking-wider">Step 4 of 5</p>
+<h2 class="text-headline-lg font-headline-lg text-on-surface">확인 결과</h2>
+</div>
+<button class="md:hidden text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Risk Status & Details -->
+<div class="lg:col-span-7 flex flex-col gap-6">
+<!-- Status Card (High Risk) -->
+<div class="grada-gradient-primary rounded-[24px] p-6 text-white shadow-lg relative overflow-hidden group">
+<div class="absolute -right-10 -top-10 opacity-20 transform group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="warning">warning</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-6 bg-black/20 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+<span class="material-symbols-outlined text-white" data-icon="error" data-weight="fill" style="font-variation-settings: 'FILL' 1;">error</span>
+<span class="text-body-md font-bold tracking-wide">고위험 후보</span>
+</div>
+<h3 class="text-headline-md font-headline-md font-bold mb-2">Pseudoephedrine (슈도에페드린)</h3>
+<p class="text-body-lg font-body-lg text-white/90 mb-6">
+                            경기 기간 중 사용이 금지된 물질입니다. 특정 농도 이상 검출 시 도핑 위반으로 간주됩니다.
+                        </p>
+<div class="bg-black/30 rounded-xl p-4 border border-white/10">
+<h4 class="text-label-mono font-label-mono text-white/70 mb-2 uppercase">검출된 제품명</h4>
+<p class="text-body-md font-body-md font-medium">타이레놀 콜드-에스 정</p>
+</div>
+</div>
+</div>
+<!-- Recommended Actions Bento Box -->
+<div class="grada-card-surface rounded-[24px] p-6 border border-[#3D4A56]">
+<h4 class="text-body-lg font-body-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" data-icon="lightbulb">lightbulb</span>
+                        권장 조치사항
+                    </h4>
+<ul class="flex flex-col gap-3 text-on-surface-variant text-body-md font-body-md">
+<li class="flex items-start gap-3 bg-[#1E262D] p-3 rounded-lg border border-[#3D4A56]">
+<span class="material-symbols-outlined text-error mt-0.5" data-icon="block">block</span>
+<span>즉시 복용을 중단하십시오.</span>
+</li>
+<li class="flex items-start gap-3 bg-[#1E262D] p-3 rounded-lg border border-[#3D4A56]">
+<span class="material-symbols-outlined text-tertiary mt-0.5" data-icon="medical_services">medical_services</span>
+<span>대체 약물 처방을 위해 팀 주치의 또는 전담 의료진과 상담하십시오.</span>
+</li>
+<li class="flex items-start gap-3 bg-[#1E262D] p-3 rounded-lg border border-[#3D4A56]">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="history_edu">history_edu</span>
+<span>이미 복용했다면, TUE(치료목적사용면책) 신청 가능 여부를 확인하세요.</span>
+</li>
+</ul>
+</div>
+<!-- Disclaimer Card -->
+<div class="grada-glass-panel rounded-xl p-4 flex gap-3 text-body-sm font-body-sm text-outline">
+<span class="material-symbols-outlined flex-shrink-0" data-icon="info">info</span>
+<p>본 결과는 제공된 성분 정보를 바탕으로 자동 생성된 참고용 데이터입니다. 최종적인 의학적 판단과 도핑 규정 준수 책임은 선수 본인에게 있습니다.</p>
+</div>
+</div>
+<!-- Right Column: Logging Form -->
+<div class="lg:col-span-5">
+<div class="grada-card-surface rounded-[24px] p-6 border border-[#3D4A56] sticky top-6">
+<h3 class="text-headline-md font-headline-md font-bold text-on-surface mb-2">복용 기록</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-6">이 약/보충제를 복용했나요?</p>
+<form class="flex flex-col gap-6">
+<!-- Custom Radio Button Group -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only radio-custom" name="intake_status" type="radio" value="not_yet"/>
+<div class="grada-input-surface border rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center gap-2 hover:bg-[#2A3441]">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center radio-outer">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent radio-inner transition-colors"></div>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface">아직 안 먹음</span>
+</div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only radio-custom" name="intake_status" type="radio" value="taken"/>
+<div class="grada-input-surface border rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center gap-2 hover:bg-[#2A3441]">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center radio-outer">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent radio-inner transition-colors"></div>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface">복용함</span>
+</div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only radio-custom" name="intake_status" type="radio" value="planned"/>
+<div class="grada-input-surface border rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center gap-2 hover:bg-[#2A3441]">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center radio-outer">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent radio-inner transition-colors"></div>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface">복용 예정</span>
+</div>
+</label>
+</div>
+<!-- Date & Time Inputs -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant uppercase">Date</label>
+<div class="relative grada-input-surface rounded-lg border group transition-colors">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="calendar_today">calendar_today</span>
+<input class="w-full bg-transparent border-none text-on-surface pl-10 pr-4 py-3 rounded-lg focus:ring-0 focus:outline-none text-body-md font-body-md [color-scheme:dark]" type="date"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant uppercase">Time</label>
+<div class="relative grada-input-surface rounded-lg border group transition-colors">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="schedule">schedule</span>
+<input class="w-full bg-transparent border-none text-on-surface pl-10 pr-4 py-3 rounded-lg focus:ring-0 focus:outline-none text-body-md font-body-md [color-scheme:dark]" type="time"/>
+</div>
+</div>
+</div>
+<!-- Dosage Input -->
+<div class="flex flex-col gap-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant uppercase">Dosage / Notes</label>
+<div class="relative grada-input-surface rounded-lg border group transition-colors">
+<input class="w-full bg-transparent border-none text-on-surface px-4 py-3 rounded-lg focus:ring-0 focus:outline-none text-body-md font-body-md placeholder-outline/50" placeholder="예: 1정, 식후 30분" type="text"/>
+</div>
+</div>
+<!-- Action Button -->
+<button class="mt-4 grada-gradient-button w-full rounded-xl py-4 flex items-center justify-center gap-2 text-on-primary font-bold text-body-lg tracking-wide shadow-lg group" type="button">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="save">save</span>
+                            복용 기록 저장
+                        </button>
+<button class="w-full py-3 text-outline hover:text-on-surface transition-colors text-body-md font-body-md border border-transparent hover:border-[#3D4A56] rounded-xl" type="button">
+                            건너뛰기
+                        </button>
+</form>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation Bar (Hidden on Desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container dark:bg-surface-container-high bg-surface-container-high dark:bg-surface-container-highest backdrop-blur-xl shadow-[0_-4px_12px_rgba(0,0,0,0.15)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-label-mono font-label-mono mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center flex flex-col items-center justify-center bg-primary-container dark:bg-secondary-container text-on-primary-container dark:text-on-secondary-container rounded-full px-4 py-1 Active: scale-95 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="text-label-mono font-label-mono mt-1 font-bold">Upload</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-label-mono font-label-mono mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-label-mono font-label-mono mt-1">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant p-2 hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-mono font-label-mono mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Simple script to handle radio button visual state syncing if needed for more complex interactions,
+        // though CSS handles the basic checked state visualization well.
+        document.querySelectorAll('.radio-custom').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Additional logic could go here if form fields need to show/hide based on selection
+                const value = e.target.value;
+                const timeInputs = document.querySelectorAll('input[type="date"], input[type="time"]');
+                
+                if(value === 'not_yet') {
+                    timeInputs.forEach(input => {
+                        input.disabled = true;
+                        input.parentElement.classList.add('opacity-50', 'pointer-events-none');
+                    });
+                } else {
+                    timeInputs.forEach(input => {
+                        input.disabled = false;
+                        input.parentElement.classList.remove('opacity-50', 'pointer-events-none');
+                    });
+                    
+                    // Set current date/time if 'taken' is selected and fields are empty
+                    if(value === 'taken') {
+                        const now = new Date();
+                        const dateInput = document.querySelector('input[type="date"]');
+                        const timeInput = document.querySelector('input[type="time"]');
+                        
+                        if(!dateInput.value) {
+                            dateInput.value = now.toISOString().split('T')[0];
+                        }
+                        if(!timeInput.value) {
+                            timeInput.value = now.toTimeString().slice(0,5);
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Trigger initial state
+        document.querySelector('input[value="not_yet"]').dispatchEvent(new Event('change'));
+    </script>
+</body></html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>정보 확인 - 도핑수첩</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "inverse-on-surface": "#322f35",
+                        "background": "#141218",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#3b383e",
+                        "surface-tint": "#cfbcff",
+                        "on-tertiary": "#3e2e00",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#e0d2ff",
+                        "inverse-primary": "#6750a4",
+                        "on-secondary": "#342b4b",
+                        "primary-fixed": "#e9ddff",
+                        "tertiary": "#e7c365",
+                        "surface-container-highest": "#36343a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "on-tertiary-container": "#503d00",
+                        "surface-container-low": "#1d1b20",
+                        "inverse-surface": "#e6e0e9",
+                        "surface-variant": "#36343a",
+                        "outline-variant": "#494551",
+                        "on-secondary-fixed": "#1f1635",
+                        "surface-dim": "#141218",
+                        "primary-container": "#6750a4",
+                        "on-surface": "#e6e0e9",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary": "#cdc0e9",
+                        "secondary-container": "#4d4465",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline": "#948e9c",
+                        "surface-container": "#211f24",
+                        "tertiary-container": "#c9a74d",
+                        "error": "#ffb4ab",
+                        "surface": "#141218",
+                        "surface-container-high": "#2b292f",
+                        "on-secondary-container": "#bfb2da",
+                        "on-background": "#e6e0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "on-surface-variant": "#cbc4d2",
+                        "on-primary-fixed": "#22005d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-padding": "24px",
+                        "max-width": "1280px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "headline-xl": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-mono": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.4", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #141218; /* background */
+            color: #e6e0e9; /* on-background */
+        }
+        .gradient-border {
+            position: relative;
+            background: #1E262D;
+            background-clip: padding-box;
+            border: 1px solid transparent;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: -1;
+            margin: -1px;
+            border-radius: inherit;
+            background: linear-gradient(to right, #7C4DFF, #cfbcff);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .gradient-border:focus-within::before {
+            opacity: 1;
+        }
+        .input-glass {
+            background: #1E262D;
+            border: 1px solid #3D4A56;
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus {
+            border-color: #7C4DFF;
+            box-shadow: 0 0 8px rgba(124, 77, 255, 0.4);
+            outline: none;
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #7C4DFF 0%, #cfbcff 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            box-shadow: 0 0 15px rgba(124, 77, 255, 0.5);
+            transform: translateY(-1px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pt-16 pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim shadow-sm fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface-container-low dark:bg-surface-container-lowest">
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface dark:text-on-background text-primary dark:text-primary-fixed-dim">3 / 5 정보 확인</h1>
+<button class="text-on-surface-variant hover:bg-surface-variant/20 p-2 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto w-full space-y-6 mt-4">
+<!-- Notice Card -->
+<div class="bg-surface-container-high rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex gap-4 items-start border border-outline-variant/30 backdrop-blur-md">
+<div class="flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-tertiary">warning</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-surface font-medium mb-1">인식된 정보가 틀릴 수 있습니다.</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">약 이름과 성분명을 직접 확인하고 필요한 경우 수정해주세요.</p>
+</div>
+</div>
+<!-- Image Thumbnail Area -->
+<div class="w-full h-48 rounded-[24px] overflow-hidden relative shadow-lg group">
+<img alt="Uploaded prescription" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" data-alt="A macro, top-down shot of a crisp white medical prescription slip lying on a dark slate table. Several bright white and light blue pills are scattered around the paper. Soft, diffused lighting highlights the texture of the paper and creates subtle shadows behind the pills, establishing a clinical, analytical atmosphere suited for a high-tech medical dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBS59WNG3qlT19FZE2JPLiJq8945jRxVQx-wSxCeiDLwTZrCExQwDRihjWB8mrTj45QeJ0t2XxBfP5t1xdggoJ3PL3-D9_HS_1Ryg26RkADZovCoPK3rO0UWmrf9cBSaCjkidQyMYhJrJxvfCW2-cgZJBcIqNdSjfEPEHvSQFfhuZOe3fPNDDyCcNfKK_vk85B94BqpXx46S2Z0GK5JiOm-YmJOMIfzXSR2srZ5yOn_eqL0CT0tEJ6FCVK1PaXH2XhSbHhqZM9we00"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-4">
+<span class="text-label-mono font-label-mono text-on-surface bg-surface/50 backdrop-blur-sm px-3 py-1 rounded-full">업로드된 이미지</span>
+</div>
+</div>
+<!-- Form Elements Container -->
+<div class="bg-[#303B45] rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.15)] space-y-6">
+<!-- Drug Name -->
+<div class="space-y-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant flex items-center gap-2" for="drugName">
+<span class="material-symbols-outlined text-[16px]">medication</span> 약 이름
+                </label>
+<input class="w-full input-glass text-body-md font-body-md text-on-surface rounded-lg px-4 py-3 placeholder:text-outline focus:ring-0" id="drugName" type="text" value="타이레놀 500mg"/>
+</div>
+<!-- Ingredients -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="text-label-mono font-label-mono text-on-surface-variant flex items-center gap-2" for="ingredients">
+<span class="material-symbols-outlined text-[16px]">science</span> 성분명
+                    </label>
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wider uppercase">Important</span>
+</div>
+<textarea class="w-full input-glass text-body-md font-body-md text-on-surface rounded-lg px-4 py-3 placeholder:text-outline focus:ring-0 resize-none" id="ingredients" rows="2">아세트아미노펜 (Acetaminophen)</textarea>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Dosage -->
+<div class="space-y-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant flex items-center gap-2" for="dosage">
+<span class="material-symbols-outlined text-[16px]">scale</span> 용량
+                    </label>
+<input class="w-full input-glass text-body-md font-body-md text-on-surface rounded-lg px-4 py-3 placeholder:text-outline focus:ring-0" id="dosage" type="text" value="500mg, 1일 3회"/>
+</div>
+<!-- Hospital Name -->
+<div class="space-y-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant flex items-center gap-2" for="hospital">
+<span class="material-symbols-outlined text-[16px]">local_hospital</span> 처방 병원/약국
+                    </label>
+<input class="w-full input-glass text-body-md font-body-md text-on-surface rounded-lg px-4 py-3 placeholder:text-outline focus:ring-0" id="hospital" type="text" value="서울중앙내과"/>
+</div>
+</div>
+<!-- Purpose -->
+<div class="space-y-2">
+<label class="text-label-mono font-label-mono text-on-surface-variant flex items-center gap-2" for="purpose">
+<span class="material-symbols-outlined text-[16px]">assignment_ind</span> 복용 목적
+                </label>
+<div class="relative">
+<select class="w-full input-glass text-body-md font-body-md text-on-surface rounded-lg px-4 py-3 appearance-none focus:ring-0" id="purpose">
+<option>감기/발열</option>
+<option>근육통</option>
+<option>소화불량</option>
+<option>기타</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom CTA -->
+<div class="fixed bottom-0 left-0 w-full p-4 bg-background/90 backdrop-blur-lg border-t border-surface-container-high z-40 pb-safe">
+<div class="max-w-max-width mx-auto flex justify-center">
+<button class="btn-gradient w-full md:w-auto md:min-w-[300px] text-white font-headline-md text-body-lg py-4 px-8 rounded-full flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+                이 정보로 확인하기
+            </button>
+</div>
+</div>
+</body></html>

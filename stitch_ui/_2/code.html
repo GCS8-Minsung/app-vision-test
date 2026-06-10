@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Athlete Info Input Screen</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Hanken Grotesk & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#cfbcff",
+                        "tertiary-fixed": "#ffdf93",
+                        "inverse-on-surface": "#322f35",
+                        "background": "#141218",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#3b383e",
+                        "surface-tint": "#cfbcff",
+                        "on-tertiary": "#3e2e00",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#e0d2ff",
+                        "inverse-primary": "#6750a4",
+                        "on-secondary": "#342b4b",
+                        "primary-fixed": "#e9ddff",
+                        "tertiary": "#e7c365",
+                        "surface-container-highest": "#36343a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "on-tertiary-container": "#503d00",
+                        "surface-container-low": "#1d1b20",
+                        "inverse-surface": "#e6e0e9",
+                        "surface-variant": "#36343a",
+                        "outline-variant": "#494551",
+                        "on-secondary-fixed": "#1f1635",
+                        "surface-dim": "#141218",
+                        "primary-container": "#6750a4",
+                        "on-surface": "#e6e0e9",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary": "#cdc0e9",
+                        "secondary-container": "#4d4465",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline": "#948e9c",
+                        "surface-container": "#211f24",
+                        "tertiary-container": "#c9a74d",
+                        "error": "#ffb4ab",
+                        "surface": "#141218",
+                        "surface-container-high": "#2b292f",
+                        "on-secondary-container": "#bfb2da",
+                        "on-background": "#e6e0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "on-surface-variant": "#cbc4d2",
+                        "on-primary-fixed": "#22005d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-padding": "24px",
+                        "max-width": "1280px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "headline-xl": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-mono": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "1.4", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #26313A; /* Enforced Brand Base Level */
+            color: #e6e0e9; /* on-background */
+        }
+        
+        .surface-card {
+            background-color: #303B45; /* Elevated Card */
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .input-grada {
+            background-color: #1E262D;
+            border: 1px solid #3D4A56;
+            color: #e6e0e9;
+            transition: all 0.3s ease;
+        }
+        
+        .input-grada:focus {
+            border-color: #7C4DFF;
+            box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.2);
+            outline: none;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #CFBCFF 0%, #7C4DFF 100%);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            box-shadow: 0 0 15px rgba(124, 77, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .progress-bar-container {
+            background-color: #1E262D;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #CFBCFF 0%, #7C4DFF 100%);
+            height: 100%;
+            width: 20%; /* 1 / 5 */
+            border-radius: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop bg-[#26313A]">
+<!-- TopAppBar (Transactional - Suppressed) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface dark:bg-surface-dim shadow-sm border-b border-surface-variant/20">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-variant/20">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface dark:text-on-background tracking-tight">도핑수첩</h1>
+</div>
+<div class="flex items-center gap-2">
+<!-- Progress indicator for transactional flow -->
+<span class="text-label-mono font-label-mono text-on-surface-variant">1 / 5</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-lg mt-24 mb-16">
+<!-- Onboarding Header -->
+<div class="mb-8 text-center space-y-2">
+<h2 class="text-headline-lg font-headline-lg text-primary-fixed">선수 정보</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">정확한 도핑 위험 분석을 위해 정보를 입력해주세요.</p>
+</div>
+<!-- Form Card -->
+<div class="surface-card p-container-padding space-y-6">
+<div class="space-y-4">
+<div class="progress-bar-container">
+<div class="progress-bar-fill"></div>
+</div>
+<p class="text-label-mono font-label-mono text-right text-primary-fixed-dim">Step 1 of 5</p>
+</div>
+<form class="space-y-5">
+<!-- Name Field -->
+<div class="space-y-2">
+<label class="block text-body-sm font-body-sm text-on-surface-variant" for="name">이름 (Name)</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 20px;">person</span>
+</span>
+<input class="input-grada w-full rounded-lg py-3 pl-10 pr-4 text-body-md font-body-md placeholder:text-on-surface-variant/50" id="name" placeholder="홍길동" required="" type="text"/>
+</div>
+</div>
+<!-- Birthdate Field -->
+<div class="space-y-2">
+<label class="block text-body-sm font-body-sm text-on-surface-variant" for="birthdate">생년월일 (Birthdate)</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_today</span>
+</span>
+<input class="input-grada w-full rounded-lg py-3 pl-10 pr-4 text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50" id="birthdate" required="" type="date"/>
+</div>
+</div>
+<!-- Sport Field -->
+<div class="space-y-2">
+<label class="block text-body-sm font-body-sm text-on-surface-variant" for="sport">종목 (Sport)</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 20px;">sports_soccer</span>
+</span>
+<select class="input-grada w-full rounded-lg py-3 pl-10 pr-10 text-body-md font-body-md appearance-none" id="sport" required="">
+<option class="text-on-surface-variant/50" disabled="" selected="" value="">종목 선택</option>
+<option value="soccer">축구 (Soccer)</option>
+<option value="baseball">야구 (Baseball)</option>
+<option value="basketball">농구 (Basketball)</option>
+<option value="athletics">육상 (Athletics)</option>
+<option value="swimming">수영 (Swimming)</option>
+<option value="other">기타 (Other)</option>
+</select>
+<span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">expand_more</span>
+</span>
+</div>
+</div>
+<!-- Team/Affiliation Field -->
+<div class="space-y-2">
+<label class="block text-body-sm font-body-sm text-on-surface-variant" for="team">소속 (Team/Affiliation)</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 20px;">groups</span>
+</span>
+<input class="input-grada w-full rounded-lg py-3 pl-10 pr-4 text-body-md font-body-md placeholder:text-on-surface-variant/50" id="team" placeholder="소속 팀 또는 기관명 입력" type="text"/>
+</div>
+</div>
+</form>
+<div class="pt-4 border-t border-[#3D4A56]">
+<div class="flex items-start gap-2 text-on-surface-variant bg-[#1E262D] p-3 rounded-lg border border-[#3D4A56]/50">
+<span class="material-symbols-outlined text-primary-fixed mt-0.5" style="font-size: 18px;">info</span>
+<p class="text-label-mono font-label-mono leading-relaxed">선수 이름과 생년월일은 본인 기록 식별 용도로만 사용됩니다.</p>
+</div>
+</div>
+<div class="pt-6">
+<button class="btn-gradient w-full py-4 rounded-xl text-body-lg font-headline-md font-bold flex items-center justify-center gap-2 group" type="button">
+                    다음
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar / SideNav suppressed for transactional flow -->
+</body></html>
