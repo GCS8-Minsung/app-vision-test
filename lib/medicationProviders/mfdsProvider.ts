@@ -3,7 +3,7 @@ import type { MedicationProductDetail, MedicationProductLookup, MedicationProvid
 
 type MfdsRecord = Record<string, unknown>;
 
-const SERVICE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService05/getDrugPrdtPrmsnInq05";
+const SERVICE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService07/getDrugPrdtPrmsnInq07";
 
 function valueOf(record: MfdsRecord, keys: string[]): string {
   for (const key of keys) {
