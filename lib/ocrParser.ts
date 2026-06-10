@@ -6,7 +6,7 @@ export interface MedicationOcrResult {
   conditionName: string;
   rawText?: string;
   confidence?: number;
-  source: "tesseract" | "filename-fallback" | "empty";
+  source: "tesseract" | "filename-fallback" | "empty" | "claude-vision";
 }
 
 const KNOWN_INGREDIENTS = [

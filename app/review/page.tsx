@@ -13,12 +13,13 @@ const EMPTY_FORM: MedicationFormValue = {
 };
 
 function getOcrSourceLabel(source?: string, confidence?: number): string {
+  if (source === "claude-vision") return "AI가 이미지에서 자동으로 추출한 초안입니다. 내용을 확인·수정 후 저장하세요.";
   if (source === "tesseract") {
     const score = typeof confidence === "number" ? ` 신뢰도 ${Math.round(confidence)}%` : "";
     return `브라우저 OCR로 인식한 초안입니다.${score}`;
   }
   if (source === "filename-fallback") return "데모 파일명 기준 샘플 초안입니다.";
-  return "자동 인식된 정보가 부족해 빈 양식으로 시작합니다.";
+  return "자동 인식된 정보가 부족합니다. 직접 입력해주세요.";
 }
 
 export default function ReviewPage() {
