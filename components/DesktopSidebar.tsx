@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,23 +10,29 @@ import { storage } from "@/lib/storage";
 import type { AthleteProfile } from "@/lib/types";
 
 const NAV_ITEMS = [
-  { href: "/", label: "홈", icon: Home },
-  { href: "/upload", label: "기록 추가", icon: PlusCircle },
-  { href: "/dashboard", label: "대시보드", icon: BarChart3 },
-  { href: "/report?days=7", label: "리포트", icon: FileText }
+  { href: "/",               label: "홈",       icon: Home },
+  { href: "/upload",         label: "기록 추가", icon: PlusCircle },
+  { href: "/dashboard",      label: "대시보드",  icon: BarChart3 },
+  { href: "/report?days=7",  label: "리포트",    icon: FileText },
 ];
+
+const ACTIVE_STYLE = {
+  background: "rgba(207,188,255,0.1)",
+  color: "#cfbcff",
+  fontWeight: 700,
+} as const;
+const IDLE_STYLE = { color: "#cbc4d2" } as const;
 
 export function DesktopSidebar() {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
+  const router   = useRouter();
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
-
-  useEffect(() => {
-    setProfile(storage.getProfile());
-  }, [pathname]);
 
   const isAuth = (AUTH_PATHS as readonly string[]).includes(pathname);
   const isFlow = (FLOW_PATHS as readonly string[]).includes(pathname);
+
+  useEffect(() => { setProfile(storage.getProfile()); }, [pathname]);
+
   if (isAuth || isFlow) return null;
 
   function handleLogout() {
@@ -37,81 +42,86 @@ export function DesktopSidebar() {
   }
 
   return (
-    <aside
-      className="hidden md:flex fixed top-0 left-0 h-full w-80 flex-col z-40 print:hidden"
-      style={{
-        background: "rgba(21, 19, 25, 0.98)",
-        backdropFilter: "blur(16px)",
-        borderRight: "1px solid rgba(255,255,255,0.06)"
-      }}
-    >
+    <aside className="desktop-sidebar print:hidden">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 pt-6 pb-5">
-        <div
-          className="flex size-9 items-center justify-center rounded-xl shrink-0"
-          style={{ background: "linear-gradient(135deg, #6750a4 0%, #7c4dff 100%)" }}
-        >
-          <ClipboardList size={18} className="text-white" />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "24px 20px 20px" }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+          background: "linear-gradient(135deg,#6750a4,#7c4dff)",
+        }}>
+          <ClipboardList size={17} color="#fff" />
         </div>
-        <span className="text-[15px] font-bold text-[#e6e0e9]">{APP_NAME}</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: "#e6e0e9" }}>{APP_NAME}</span>
       </div>
 
       {/* Profile chip */}
       {profile && (
-        <div
-          className="mx-3 mb-4 flex items-center gap-3 rounded-2xl p-3"
-          style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
-        >
-          <div
-            className="flex size-9 items-center justify-center rounded-full shrink-0"
-            style={{ background: "linear-gradient(135deg, #6750a4, #7c4dff)" }}
-          >
-            <User size={15} className="text-white" />
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12,
+          margin: "0 12px 16px",
+          padding: "12px",
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16,
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+            background: "linear-gradient(135deg,#6750a4,#7c4dff)",
+          }}>
+            <User size={14} color="#fff" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#e6e0e9] truncate">{profile.name}</p>
-            <p className="text-[11px] text-[#948e9c] truncate">
+          <div style={{ minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#e6e0e9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {profile.name}
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: "#948e9c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {profile.sport}{profile.teamName ? ` · ${profile.teamName}` : ""}
             </p>
           </div>
         </div>
       )}
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-0.5 px-3 flex-1">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname === item.href.split("?")[0];
+      {/* Nav links */}
+      <nav style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 12px", flex: 1 }}>
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const active = href === "/" ? pathname === "/" : pathname === href.split("?")[0];
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={clsx(
-                "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
-                active
-                  ? "text-[#cfbcff] font-semibold"
-                  : "text-[#cbc4d2] hover:text-[#e6e0e9] hover:bg-white/5"
-              )}
-              style={active ? { background: "rgba(207, 188, 255, 0.1)" } : {}}
+              key={href}
+              href={href}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 16px", borderRadius: 12,
+                fontSize: 14, fontWeight: 500, textDecoration: "none",
+                transition: "all 0.15s",
+                ...(active ? ACTIVE_STYLE : IDLE_STYLE),
+              }}
             >
-              <Icon size={18} aria-hidden="true" className="shrink-0" />
-              {item.label}
+              <Icon size={17} />
+              {label}
             </Link>
           );
         })}
       </nav>
 
       {/* Logout */}
-      <div className="px-3 pb-6">
+      <div style={{ padding: "0 12px 24px" }}>
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-[#948e9c] transition-all hover:text-[#e6e0e9] hover:bg-white/5"
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            width: "100%", padding: "10px 16px", borderRadius: 12,
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 14, fontWeight: 500, color: "#948e9c",
+            transition: "all 0.15s",
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.color = "#e6e0e9"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+          onMouseOut={(e)  => { e.currentTarget.style.color = "#948e9c"; e.currentTarget.style.background = "none"; }}
         >
-          <LogOut size={18} className="shrink-0" />
+          <LogOut size={17} />
           로그아웃
         </button>
       </div>

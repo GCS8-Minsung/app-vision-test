@@ -6,15 +6,20 @@ import { useRouter } from "next/navigation";
 import { ClipboardList, LogIn, Shield } from "lucide-react";
 import { athleteDb, sessionAuth, toAthleteProfile } from "@/lib/athleteDb";
 import { APP_NAME } from "@/lib/constants";
+import { formatPhone } from "@/lib/formatPhone";
 import { storage } from "@/lib/storage";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [name,      setName]      = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [phone,     setPhone]     = useState("");
+  const [error,     setError]     = useState("");
+  const [loading,   setLoading]   = useState(false);
+
+  function handlePhone(raw: string) {
+    setPhone(formatPhone(raw));
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -24,8 +29,6 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-
-    /* Seed demo data on first login attempt */
     if (!athleteDb.isSeeded()) athleteDb.seedDemo();
 
     const athlete = athleteDb.findByCredentials(name, birthDate, phone);
@@ -34,72 +37,77 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-
     sessionAuth.setAthleteId(athlete.id);
     storage.saveProfile(toAthleteProfile(athlete));
     router.replace("/dashboard");
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ background: "#141218" }}
-    >
-      {/* Ambient glows */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full opacity-20 blur-3xl" style={{ background: "#6750a4" }} />
-        <div className="absolute bottom-0 right-0 h-64 w-64 rounded-full opacity-10 blur-3xl" style={{ background: "#cfbcff" }} />
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      padding: "3rem 1rem", background: "#141218", position: "relative", overflow: "hidden",
+    }}>
+      {/* Ambient glow */}
+      <div aria-hidden="true" style={{
+        pointerEvents: "none", position: "fixed", inset: 0, zIndex: 0, overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: "-8rem", left: "50%", transform: "translateX(-50%)",
+          width: 480, height: 480, borderRadius: "50%",
+          background: "#6750a4", opacity: 0.18, filter: "blur(80px)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-6rem", right: "-6rem",
+          width: 320, height: 320, borderRadius: "50%",
+          background: "#cfbcff", opacity: 0.08, filter: "blur(60px)",
+        }} />
       </div>
 
       {/* Brand */}
-      <div className="flex flex-col items-center gap-3 mb-10">
-        <div
-          className="flex size-16 items-center justify-center rounded-3xl shadow-glow"
-          style={{ background: "linear-gradient(135deg, #6750a4 0%, #7c4dff 100%)" }}
-        >
-          <ClipboardList size={30} className="text-white" />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 36 }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: 64, height: 64, borderRadius: 24,
+          background: "linear-gradient(135deg,#6750a4,#7c4dff)",
+          boxShadow: "0 0 24px rgba(124,77,255,0.4)",
+        }}>
+          <ClipboardList size={30} color="#fff" />
         </div>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#e6e0e9]">{APP_NAME}</h1>
-          <p className="text-sm text-[#948e9c] mt-1">선수 복용 기록 & 도핑 리스크 관리</p>
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#e6e0e9" }}>{APP_NAME}</h1>
+          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#948e9c" }}>선수 복용 기록 & 도핑 리스크 관리</p>
         </div>
       </div>
 
-      {/* Login card */}
-      <div
-        className="w-full max-w-sm rounded-3xl p-7 space-y-5"
-        style={{
-          background: "#211f24",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.4)"
-        }}
-      >
-        <div>
-          <h2 className="text-lg font-bold text-[#e6e0e9]">로그인</h2>
-          <p className="text-sm text-[#948e9c] mt-0.5">이름, 생년월일, 전화번호로 인증합니다.</p>
-        </div>
+      {/* Card */}
+      <div style={{
+        position: "relative", zIndex: 1, width: "100%", maxWidth: 380,
+        background: "#211f24", border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 24, padding: "28px 28px 24px",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.45)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 700, color: "#e6e0e9" }}>로그인</h2>
+        <p style={{ margin: "0 0 24px", fontSize: 13, color: "#948e9c" }}>
+          이름, 생년월일, 전화번호로 인증합니다.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <label htmlFor="login-name" className="form-label">이름</label>
             <input
-              id="login-name"
-              className="form-input"
-              placeholder="홍길동"
-              value={name}
+              id="login-name" className="form-input"
+              placeholder="홍길동" value={name}
               onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              required
+              autoComplete="name" required
             />
           </div>
 
           <div>
-            <label htmlFor="login-birthDate" className="form-label">생년월일</label>
+            <label htmlFor="login-birth" className="form-label">생년월일</label>
             <input
-              id="login-birthDate"
-              className="form-input"
-              type="date"
-              value={birthDate}
+              id="login-birth" className="form-input"
+              type="date" value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
               required
             />
@@ -108,50 +116,51 @@ export default function LoginPage() {
           <div>
             <label htmlFor="login-phone" className="form-label">전화번호</label>
             <input
-              id="login-phone"
-              className="form-input"
-              placeholder="010-0000-0000"
+              id="login-phone" className="form-input"
+              type="tel" placeholder="010-0000-0000"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              autoComplete="tel"
-              required
+              onChange={(e) => handlePhone(e.target.value)}
+              autoComplete="tel" required
             />
           </div>
 
           {error && (
-            <div
-              className="flex items-start gap-2 rounded-xl p-3 text-sm"
-              style={{ background: "rgba(255,180,171,0.08)", border: "1px solid rgba(255,180,171,0.25)", color: "#ffb4ab" }}
-            >
-              <svg width="14" height="14" className="mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <div style={{
+              display: "flex", alignItems: "flex-start", gap: 8, padding: "12px 14px",
+              background: "rgba(255,180,171,0.08)", border: "1px solid rgba(255,180,171,0.25)",
+              borderRadius: 12, color: "#ffb4ab", fontSize: 13,
+            }}>
+              <svg width="14" height="14" style={{ marginTop: 1, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               {error}
             </div>
           )}
 
-          <button type="submit" className="primary-button w-full" disabled={loading}>
-            <LogIn size={17} />
-            {loading ? "확인 중..." : "로그인"}
+          <button type="submit" className="primary-button" style={{ width: "100%", marginTop: 4 }} disabled={loading}>
+            <LogIn size={16} />
+            {loading ? "확인 중…" : "로그인"}
           </button>
         </form>
 
         {/* Disclaimer */}
-        <div
-          className="flex items-start gap-2 rounded-xl p-3 text-xs text-[#948e9c]"
-          style={{ background: "rgba(30,38,45,0.8)", border: "1px solid #3d4a56" }}
-        >
-          <Shield size={12} className="mt-0.5 shrink-0 text-[#cfbcff]" />
-          등록된 선수만 로그인할 수 있습니다. 등록 요청은 관리자에게 문의하세요.
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 8, marginTop: 16,
+          padding: "10px 14px",
+          background: "rgba(30,27,32,0.8)", border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 12,
+        }}>
+          <Shield size={12} color="#cfbcff" style={{ marginTop: 2, flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 11, color: "#948e9c", lineHeight: 1.5 }}>
+            등록된 선수만 로그인할 수 있습니다. 등록 요청은 관리자에게 문의하세요.
+          </p>
         </div>
       </div>
 
       {/* Admin link */}
-      <p className="mt-6 text-xs text-[#494551]">
+      <p style={{ position: "relative", zIndex: 1, marginTop: 24, fontSize: 12, color: "#494551" }}>
         관리자이신가요?{" "}
-        <a href="/admin" className="text-[#948e9c] underline-offset-2 hover:underline">
-          관리자 페이지
-        </a>
+        <a href="/admin" style={{ color: "#948e9c", textDecoration: "underline" }}>관리자 페이지</a>
       </p>
     </div>
   );

@@ -1,9 +1,7 @@
 "use client";
 
-import clsx from "clsx";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AUTH_PATHS, FLOW_PATHS } from "@/lib/constants";
 import { sessionAuth } from "@/lib/athleteDb";
 
@@ -20,18 +18,7 @@ export function ContentWrapper({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, isAuth, router]);
 
-  if (isAuth) {
-    return <>{children}</>;
-  }
-
-  return (
-    <div
-      className={clsx(
-        "pt-16",
-        isFlow ? "pb-12" : "pb-28 md:pb-10 md:pl-80"
-      )}
-    >
-      {children}
-    </div>
-  );
+  if (isAuth)  return <div className="content-auth">{children}</div>;
+  if (isFlow)  return <div className="content-flow">{children}</div>;
+  return       <div className="content-main">{children}</div>;
 }
