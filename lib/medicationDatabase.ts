@@ -1,3 +1,5 @@
+import { BULK_MEDICATION_PRODUCT_DATABASE } from "./medicationSeedBulk";
+
 export interface MedicationIngredient {
   name: string;
   dosage?: string;
@@ -20,9 +22,9 @@ export interface MedicationSearchResult {
   score: number;
 }
 
-export const MEDICATION_DATABASE_VERSION = "2026.1-product-seed";
+export const MEDICATION_DATABASE_VERSION = "2026.2-product-seed-500-plus";
 
-export const MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
+const CURATED_MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
   {
     id: "med-tylenol-er-650",
     productName: "타이레놀8시간이알서방정",
@@ -223,6 +225,11 @@ export const MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
     sourceNames: ["약학정보원", "의약품안전나라"],
     note: "항히스타민제 제품명 seed"
   }
+];
+
+export const MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
+  ...CURATED_MEDICATION_PRODUCT_DATABASE,
+  ...BULK_MEDICATION_PRODUCT_DATABASE
 ];
 
 function normalize(value: string): string {

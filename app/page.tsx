@@ -40,7 +40,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="section-card mb-5">
         <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 12 }}>
-          도핑수첩 MVP
+          Clean Check
         </p>
         {loggedIn && athleteName ? (
           <h1 className="text-3xl font-bold leading-tight text-[#e6e0e9] sm:text-4xl">

@@ -1,6 +1,6 @@
 import type { IntakeStatus, RiskLevel, UploadType } from "./types";
 
-export const APP_NAME = "도핑수첩 MVP";
+export const APP_NAME = "Clean Check";
 
 export const COMMON_DISCLAIMER =
   "본 서비스는 공식 도핑 판정 도구가 아닙니다. 입력된 약물·성분 정보를 바탕으로 확인이 필요한 항목을 정리하는 기록 보조 도구입니다. 최종 확인은 KADA 공식 검색, 의료진, 약사 등 전문가를 통해 진행해야 합니다.";
