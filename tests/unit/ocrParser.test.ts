@@ -17,7 +17,7 @@ describe("parseMedicationText", () => {
     expect(result.dosage).toBe("18mg");
     expect(result.hospitalName).toBe("테스트 의원");
     expect(result.conditionName).toBe("처방 확인");
-    expect(result.source).toBe("tesseract");
+    expect(result.source).toBe("local-parser");
   });
 
   it("infers known ingredient and dosage from unlabeled text", () => {

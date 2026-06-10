@@ -15,6 +15,9 @@ describe("substance database", () => {
   it("maps Korean medicine aliases to ingredients", () => {
     expect(findMedicationAlias("콘서타정 18mg")?.ingredientName).toBe("methylphenidate");
     expect(findMedicationAlias("슈다페드정")?.ingredientName).toBe("pseudoephedrine");
+    expect(findMedicationAlias("타이레놀 이알 650mg")?.ingredientName).toBe("acetaminophen");
+    expect(findMedicationAlias("벤토린에보할러")?.ingredientName).toBe("salbutamol");
+    expect(findMedicationAlias("라식스정")?.ingredientName).toBe("furosemide");
   });
 
   it("finds substance entries by English and Korean names", () => {
@@ -29,5 +32,11 @@ describe("substance database", () => {
 
   it("includes acetaminophen as a common medicine-box ingredient", () => {
     expect(findSubstanceEntry({ itemName: "", ingredientName: "아세트아미노펜(USP)" })?.primaryName).toBe("acetaminophen");
+  });
+
+  it("connects expanded product aliases to WADA/KADA seed entries", () => {
+    expect(findSubstanceEntry({ itemName: "콩코르정", ingredientName: "" })?.primaryName).toBe("bisoprolol");
+    expect(findSubstanceEntry({ itemName: "울트라셋정", ingredientName: "" })?.primaryName).toBe("tramadol");
+    expect(findSubstanceEntry({ itemName: "판피린큐", ingredientName: "" })?.primaryName).toBe("methylephedrine");
   });
 });

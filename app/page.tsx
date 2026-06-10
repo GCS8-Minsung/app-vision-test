@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, BarChart3, ClipboardList, SearchCheck } from "lucide-react";
 import { sessionAuth } from "@/lib/athleteDb";
 import { storage } from "@/lib/storage";
 
 export default function HomePage() {
-  const router = useRouter();
   const [ready, setReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [athleteName, setAthleteName] = useState("");
@@ -92,11 +90,11 @@ export default function HomePage() {
             <>
               <Link
                 data-testid="start-button"
-                href="/login"
+                href="/onboarding"
                 className="primary-button flex-1 sm:flex-none"
               >
                 <ClipboardList size={17} aria-hidden="true" />
-                로그인 / 기록 시작
+                기록 시작하기
                 <ArrowRight size={17} aria-hidden="true" />
               </Link>
               <Link href="/admin" className="secondary-button flex-1 sm:flex-none">

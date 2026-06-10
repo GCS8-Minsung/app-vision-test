@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent, DragEvent, FormEvent } from "react";
 import { useState } from "react";
-import { AlertTriangle, CloudUpload } from "lucide-react";
+import { AlertTriangle, Camera, CloudUpload, ImagePlus } from "lucide-react";
 import { StepIndicator } from "@/components/StepIndicator";
 import { UploadCard } from "@/components/UploadCard";
 import { UPLOAD_TYPE_LABELS } from "@/lib/constants";
@@ -29,12 +29,52 @@ export default function UploadPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [ocrStatus, setOcrStatus] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+
+  async function handleSelectedFile(nextFile: File | null) {
+    setError("");
+    setOcrStatus("");
+
+    if (!nextFile) {
+      setFile(null);
+      setPreview("");
+      return;
+    }
+
+    const isImage = nextFile.type.startsWith("image/") || /\.(png|jpe?g|heic|heif|webp)$/i.test(nextFile.name);
+    if (!isImage) {
+      setFile(null);
+      setPreview("");
+      setError("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+
+    setFile(nextFile);
+    setPreview(await fileToDataUrl(nextFile));
+  }
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
-    const nextFile = event.target.files?.[0] ?? null;
-    setFile(nextFile);
-    setError("");
-    setPreview(nextFile ? await fileToDataUrl(nextFile) : "");
+    await handleSelectedFile(event.target.files?.[0] ?? null);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setIsDragging(false);
+  }
+
+  async function handleDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+    await handleSelectedFile(event.dataTransfer.files?.[0] ?? null);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -100,10 +140,14 @@ export default function UploadPage() {
             {!preview ? (
               <label
                 htmlFor="file"
+                data-testid="drop-zone"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
                 className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl p-8 text-center transition-colors hover:border-[#7c4dff]"
                 style={{
-                  background: "#1e262d",
-                  border: "2px dashed #3d4a56",
+                  background: isDragging ? "rgba(124, 77, 255, 0.14)" : "#1e262d",
+                  border: isDragging ? "2px dashed #cfbcff" : "2px dashed #3d4a56",
                   minHeight: "180px"
                 }}
               >
@@ -114,8 +158,10 @@ export default function UploadPage() {
                   <CloudUpload size={28} style={{ color: "#cfbcff" }} />
                 </div>
                 <div>
-                  <p className="font-medium text-[#e6e0e9]">이미지를 여기에 놓으세요</p>
-                  <p className="mt-1 text-xs text-[#948e9c]">또는 클릭하여 선택 · PNG, JPG, HEIC</p>
+                  <p className="font-medium text-[#e6e0e9]">
+                    {isDragging ? "여기에 놓으면 첨부됩니다" : "이미지를 여기에 놓으세요"}
+                  </p>
+                  <p className="mt-1 text-xs text-[#948e9c]">또는 클릭하여 선택 · PNG, JPG, HEIC, WEBP</p>
                 </div>
               </label>
             ) : null}
@@ -127,9 +173,37 @@ export default function UploadPage() {
               accept="image/*"
               onChange={handleFile}
             />
+            <input
+              id="camera-file"
+              data-testid="camera-input"
+              className="sr-only"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFile}
+            />
           </div>
 
           {preview && <UploadCard preview={preview} fileName={file?.name} />}
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label
+              htmlFor="file"
+              className="secondary-button flex cursor-pointer items-center justify-center gap-2 text-center"
+              data-testid="file-select-button"
+            >
+              <ImagePlus size={18} aria-hidden="true" />
+              이미지 선택
+            </label>
+            <label
+              htmlFor="camera-file"
+              className="secondary-button flex cursor-pointer items-center justify-center gap-2 text-center"
+              data-testid="camera-button"
+            >
+              <Camera size={18} aria-hidden="true" />
+              카메라로 촬영
+            </label>
+          </div>
 
           {ocrStatus && (
             <div

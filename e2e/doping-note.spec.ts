@@ -27,6 +27,20 @@ test("happy path", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/upload/);
   await page.getByTestId("upload-type-select").selectOption("prescription");
+  await page.route("**/api/ocr", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        itemName: "콘서타정",
+        ingredientName: "methylphenidate",
+        dosage: "18mg",
+        hospitalName: "",
+        conditionName: "",
+        source: "gemini-vision"
+      })
+    });
+  });
   await page.getByTestId("file-input").setInputFiles({
     name: "methyl-prescription.png",
     mimeType: "image/png",

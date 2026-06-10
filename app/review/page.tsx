@@ -13,8 +13,8 @@ const EMPTY_FORM: MedicationFormValue = {
 };
 
 function getOcrSourceLabel(source?: string, confidence?: number): string {
-  if (source === "claude-vision") return "AI가 이미지에서 자동으로 추출한 초안입니다. 내용을 확인·수정 후 저장하세요.";
-  if (source === "tesseract") {
+  if (source === "gemini-vision") return "AI가 이미지에서 자동으로 추출한 초안입니다. 내용을 확인·수정 후 저장하세요.";
+  if (source === "local-parser") {
     const score = typeof confidence === "number" ? ` 신뢰도 ${Math.round(confidence)}%` : "";
     return `브라우저 OCR로 인식한 초안입니다.${score}`;
   }

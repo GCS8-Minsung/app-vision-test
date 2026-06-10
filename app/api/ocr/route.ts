@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       dosage:         (parsed.dosage         ?? "").trim(),
       hospitalName:   (parsed.hospitalName   ?? "").trim(),
       conditionName:  (parsed.conditionName  ?? "").trim(),
-      source: "claude-vision",
+      source: "gemini-vision",
     });
   } catch (err) {
     console.error("[OCR API]", err);

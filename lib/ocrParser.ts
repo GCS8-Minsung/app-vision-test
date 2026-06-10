@@ -6,7 +6,7 @@ export interface MedicationOcrResult {
   conditionName: string;
   rawText?: string;
   confidence?: number;
-  source: "tesseract" | "filename-fallback" | "empty" | "claude-vision";
+  source: "local-parser" | "filename-fallback" | "empty" | "gemini-vision";
 }
 
 const KNOWN_INGREDIENTS = [
@@ -171,7 +171,7 @@ export function parseMedicationText(text: string, confidence?: number): Medicati
     conditionName: findByLabels(lines, [/질환명/i, /복용\s*목적/i, /condition/i, /purpose/i]),
     rawText: text,
     confidence,
-    source: itemName || ingredientName || dosage ? "tesseract" : "empty"
+    source: itemName || ingredientName || dosage ? "local-parser" : "empty"
   };
 }
 

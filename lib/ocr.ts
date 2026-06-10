@@ -2,7 +2,7 @@
 
 import type { MedicationOcrResult } from "./ocrParser";
 
-const MAX_BYTES = 3_500_000; // Claude API 이미지 한도보다 여유를 둔 3.5MB
+const MAX_BYTES = 3_500_000; // Vision API 전송 안정성을 위한 3.5MB 제한
 
 async function compressIfNeeded(file: File): Promise<File> {
   if (file.size <= MAX_BYTES) return file;
