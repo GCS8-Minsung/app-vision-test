@@ -60,6 +60,7 @@ test("happy path", async ({ page }) => {
   await expect(page).toHaveURL(/\/result/);
   await expect(page.getByText("고위험 후보").first()).toBeVisible();
   await page.getByTestId("intake-status-taken").click();
+  await page.getByTestId("competition-period-checkbox").check();
   await expect(page.getByLabel("용량", { exact: true })).toHaveValue("18mg");
   await page.getByTestId("intake-save").click();
 
@@ -74,6 +75,7 @@ test("happy path", async ({ page }) => {
   await expect(page.getByTestId("report-view")).toContainText("콘서타정");
   await expect(page.getByTestId("report-view")).toContainText("18mg");
   await expect(page.getByTestId("report-view")).toContainText("고위험 후보");
+  await expect(page.getByTestId("report-view")).toContainText("경기기간: 예");
   await expect(page.getByTestId("copy-share-link")).toBeVisible();
   await expect(page.getByTestId("print-report")).toBeVisible();
 });
@@ -87,6 +89,8 @@ test("product-name lookup fills ingredient and dosage candidates", async ({ page
   await page.getByLabel("종목").fill("육상");
   await page.getByRole("button", { name: "다음으로 이동" }).click();
 
+  await expect(page.getByTestId("camera-button")).toBeVisible();
+  await expect(page.getByTestId("camera-button")).toHaveText(/카메라로 촬영/);
   await page.route("**/api/ocr", async (route) => {
     await route.fulfill({
       status: 200,

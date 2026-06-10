@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import type { ChangeEvent, DragEvent, FormEvent, MouseEvent } from "react";
-import { useState } from "react";
-import { AlertTriangle, Camera, CloudUpload, ImagePlus, Shield, Undo2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, Camera, CloudUpload, ImagePlus, Shield, Undo2, X } from "lucide-react";
 import { StepIndicator } from "@/components/StepIndicator";
 import { UPLOAD_TYPE_LABELS } from "@/lib/constants";
 import { createId } from "@/lib/ids";
@@ -84,6 +84,23 @@ export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [maskMode, setMaskMode] = useState(false);
   const [masks, setMasks] = useState<MaskBox[]>([]);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState("");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(() => undefined);
+    }
+  }, [cameraStream]);
+
+  useEffect(() => {
+    return () => {
+      cameraStream?.getTracks().forEach((track) => track.stop());
+    };
+  }, [cameraStream]);
 
   async function handleSelectedFile(nextFile: File | null) {
     setError("");
@@ -112,6 +129,63 @@ export default function UploadPage() {
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     await handleSelectedFile(event.target.files?.[0] ?? null);
+  }
+
+  function stopCamera() {
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setCameraStream(null);
+    setCameraOpen(false);
+  }
+
+  async function startCamera() {
+    setError("");
+    setCameraError("");
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("이 브라우저에서는 직접 촬영을 지원하지 않습니다. 이미지 선택을 사용해주세요.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1600 },
+          height: { ideal: 1200 }
+        },
+        audio: false
+      });
+      setCameraStream(stream);
+      setCameraOpen(true);
+    } catch {
+      setCameraError("카메라를 열 수 없습니다. 브라우저 권한 또는 장치 연결 상태를 확인해주세요.");
+    }
+  }
+
+  async function capturePhoto() {
+    const video = videoRef.current;
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+      setCameraError("카메라 화면이 준비되지 않았습니다. 잠시 후 다시 촬영해주세요.");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setCameraError("촬영 이미지를 처리할 수 없습니다.");
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const capturedDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    const capturedFile = dataUrlToFile(capturedDataUrl, `clean-check-camera-${Date.now()}.jpg`);
+    await handleSelectedFile(capturedFile);
+    stopCamera();
   }
 
   function handleDragOver(event: DragEvent<HTMLLabelElement>) {
@@ -248,16 +322,44 @@ export default function UploadPage() {
               accept="image/*"
               onChange={handleFile}
             />
-            <input
-              id="camera-file"
-              data-testid="camera-input"
-              className="sr-only"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFile}
-            />
           </div>
+
+          {cameraOpen && (
+            <div
+              className="space-y-3 rounded-2xl p-3"
+              style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-[#e6e0e9]">카메라 촬영</p>
+                <button
+                  data-testid="camera-close"
+                  type="button"
+                  className="secondary-button px-3"
+                  onClick={stopCamera}
+                >
+                  <X size={16} aria-hidden="true" />
+                  닫기
+                </button>
+              </div>
+              <video
+                ref={videoRef}
+                className="aspect-[4/3] w-full rounded-xl bg-black object-contain"
+                autoPlay
+                playsInline
+                muted
+                aria-label="카메라 미리보기"
+              />
+              <button
+                data-testid="camera-capture"
+                type="button"
+                className="primary-button w-full"
+                onClick={capturePhoto}
+              >
+                <Camera size={18} aria-hidden="true" />
+                사진 촬영
+              </button>
+            </div>
+          )}
 
           {preview && (
             <div className="space-y-3">
@@ -325,15 +427,20 @@ export default function UploadPage() {
               <ImagePlus size={18} aria-hidden="true" />
               이미지 선택
             </label>
-            <label
-              htmlFor="camera-file"
-              className="secondary-button flex cursor-pointer items-center justify-center gap-2 text-center"
+            <button
+              type="button"
+              className="secondary-button flex items-center justify-center gap-2 text-center"
               data-testid="camera-button"
+              onClick={startCamera}
             >
               <Camera size={18} aria-hidden="true" />
               카메라로 촬영
-            </label>
+            </button>
           </div>
+
+          {cameraError && (
+            <p className="text-sm font-semibold" style={{ color: "#ffb4ab" }}>{cameraError}</p>
+          )}
 
           {ocrStatus && (
             <div

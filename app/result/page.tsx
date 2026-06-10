@@ -213,6 +213,7 @@ export default function ResultPage() {
               userId: profile.id,
               itemId: item.id,
               intakeStatus: value.intakeStatus,
+              isCompetitionPeriod: value.isCompetitionPeriod,
               intakeDate: value.intakeDate,
               intakeTime: value.intakeTime,
               dosage: value.dosage.trim() || undefined,

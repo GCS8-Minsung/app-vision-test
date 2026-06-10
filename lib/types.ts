@@ -104,6 +104,7 @@ export interface IntakeLog {
   userId: string;
   itemId: string;
   intakeStatus: IntakeStatus;
+  isCompetitionPeriod?: boolean;
   intakeDate: string;
   intakeTime: string;
   dosage?: string;

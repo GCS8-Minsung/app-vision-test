@@ -76,12 +76,14 @@ describe("storage", () => {
       userId: "profile_1",
       itemId: "item_1",
       intakeStatus: "taken",
+      isCompetitionPeriod: true,
       intakeDate: "2026-06-10",
       intakeTime: "09:00",
       createdAt: "2026-06-10T00:00:00.000Z"
     });
 
     expect(storage.getIntakeLogs()[0].intakeStatus).toBe("taken");
+    expect(storage.getIntakeLogs()[0].isCompetitionPeriod).toBe(true);
   });
 
   it("clears all records", () => {

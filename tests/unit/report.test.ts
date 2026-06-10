@@ -53,6 +53,7 @@ const logs: IntakeLog[] = [
     userId: "profile_1",
     itemId: "item_1",
     intakeStatus: "taken",
+    isCompetitionPeriod: true,
     intakeDate: "2026-06-10",
     intakeTime: "09:00",
     dosage: "18mg",
@@ -83,6 +84,7 @@ describe("buildReportData", () => {
     expect(report.items[0].risk?.riskLevel).toBe("high_risk_candidate");
     expect(report.items[0].substances[0].ingredientName).toBe("methylphenidate");
     expect(report.items[0].risks).toHaveLength(1);
+    expect(report.items[0].log.isCompetitionPeriod).toBe(true);
   });
 
   it("counts risk levels", () => {

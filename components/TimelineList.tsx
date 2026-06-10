@@ -55,6 +55,7 @@ export function TimelineList({
               </h3>
               <p className="mt-0.5 text-xs text-[#948e9c] truncate">
                 {log.intakeDate} {log.intakeTime} · {INTAKE_STATUS_LABELS[log.intakeStatus]}
+                {log.isCompetitionPeriod ? " · 경기기간" : ""}
               </p>
               {item?.ingredientName && (
                 <p className="mt-0.5 text-xs text-[#cbc4d2] truncate">{item.ingredientName}</p>

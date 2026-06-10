@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { CalendarDays, Clock, Save } from "lucide-react";
+import { CalendarDays, Clock, Flag, Save } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { INTAKE_STATUS_LABELS } from "@/lib/constants";
@@ -28,6 +28,7 @@ export function IntakeForm({
   defaultDosage?: string;
   onSave: (value: {
     intakeStatus: IntakeStatus;
+    isCompetitionPeriod: boolean;
     intakeDate: string;
     intakeTime: string;
     dosage: string;
@@ -37,12 +38,13 @@ export function IntakeForm({
   const [status, setStatus] = useState<IntakeStatus>("not_taken");
   const [date, setDate] = useState(today());
   const [time, setTime] = useState(currentTime());
+  const [isCompetitionPeriod, setIsCompetitionPeriod] = useState(false);
   const [dosage, setDosage] = useState(defaultDosage ?? "");
   const [note, setNote] = useState("");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    onSave({ intakeStatus: status, intakeDate: date, intakeTime: time, dosage, note });
+    onSave({ intakeStatus: status, isCompetitionPeriod, intakeDate: date, intakeTime: time, dosage, note });
   }
 
   return (
@@ -84,6 +86,28 @@ export function IntakeForm({
           ))}
         </div>
       </fieldset>
+
+      <label
+        className="flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl p-4 text-sm"
+        style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+      >
+        <input
+          data-testid="competition-period-checkbox"
+          type="checkbox"
+          className="mt-1 size-4 accent-[#7c4dff]"
+          checked={isCompetitionPeriod}
+          onChange={(event) => setIsCompetitionPeriod(event.target.checked)}
+        />
+        <span className="flex-1">
+          <span className="flex items-center gap-2 font-semibold text-[#e6e0e9]">
+            <Flag size={15} aria-hidden="true" />
+            복용 시점이 경기기간입니다
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-[#948e9c]">
+            경기기간 조건에 따라 기준이 달라질 수 있어 리포트에 함께 저장합니다.
+          </span>
+        </span>
+      </label>
 
       {/* Date + Time */}
       <div className="grid grid-cols-2 gap-4">

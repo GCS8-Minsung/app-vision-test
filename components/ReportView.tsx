@@ -89,6 +89,9 @@ export function ReportView({ report }: { report: ReportData }) {
                   <p className="mt-0.5 text-xs text-[#948e9c]">
                     {log.intakeDate} {log.intakeTime}
                   </p>
+                  <p className="mt-0.5 text-xs text-[#948e9c]">
+                    경기기간: {log.isCompetitionPeriod ? "예" : "아니오"}
+                  </p>
                   {risk?.databaseMatch && (
                     <p className="mt-0.5 text-xs text-[#948e9c]">
                       DB 매칭: {risk.databaseMatch.substanceName} · {risk.databaseMatch.wadaClass}
