@@ -60,14 +60,12 @@ export default function ResultPage() {
     <main className="page-shell">
       {/* Risk result card */}
       <section className="section-card space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <RiskBadge riskLevel={risk.riskLevel} />
-            <h1 className="mt-3 text-2xl font-bold text-[#e6e0e9]">
-              {RISK_LABELS[risk.riskLevel]}
-            </h1>
-            <p className="text-sm text-[#cbc4d2] mt-0.5">{item.itemName}</p>
-          </div>
+        <div>
+          <RiskBadge riskLevel={risk.riskLevel} compact />
+          <h1 className="mt-3 text-2xl font-bold text-[#e6e0e9]">
+            {RISK_LABELS[risk.riskLevel]}
+          </h1>
+          <p className="text-sm text-[#cbc4d2] mt-0.5">{item.itemName}</p>
         </div>
 
         <p className="leading-7 text-[#cbc4d2] text-sm">{risk.riskReason}</p>
@@ -88,10 +86,7 @@ export default function ResultPage() {
             className="rounded-xl p-3 text-sm leading-6"
             style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
           >
-            <p
-              className="font-semibold mb-1"
-              style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "10px", letterSpacing: "0.08em", color: "#cfbcff", textTransform: "uppercase" }}
-            >
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 6 }}>
               DB 매칭 근거
             </p>
             <p className="text-[#cbc4d2]">성분 후보: {risk.databaseMatch.substanceName}</p>

@@ -24,9 +24,8 @@ const S = {
   } as React.CSSProperties,
   label: {
     display: "block", marginBottom: 6,
-    fontFamily: "JetBrains Mono, monospace",
-    fontSize: 10, fontWeight: 500, letterSpacing: "0.07em",
-    textTransform: "uppercase" as const, color: "#cbc4d2",
+    fontSize: 11, fontWeight: 600, letterSpacing: "0.02em",
+    color: "#cbc4d2",
   } as React.CSSProperties,
 };
 
@@ -146,7 +145,7 @@ export default function AdminPage() {
         {/* Action bar */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
           <div style={{ ...S.card, padding: "12px 20px", display: "flex", flexDirection: "column" }}>
-            <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 10, fontWeight: 500, letterSpacing: "0.07em", textTransform: "uppercase", color: "#cbc4d2", marginBottom: 4 }}>등록 선수</span>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cbc4d2", marginBottom: 4 }}>등록 선수</span>
             <span style={{ fontSize: 28, fontWeight: 700, lineHeight: 1, color: "#e6e0e9" }}>{athletes.length}</span>
           </div>
           <button type="button" onClick={openAdd} className="primary-button">
@@ -216,8 +215,8 @@ export default function AdminPage() {
             <div style={{
               display: "grid", gridTemplateColumns: "1fr 160px 100px 80px",
               gap: 8, padding: "12px 20px",
-              fontFamily: "JetBrains Mono, monospace", fontSize: 10, fontWeight: 500,
-              letterSpacing: "0.07em", textTransform: "uppercase" as const, color: "#948e9c",
+              fontSize: 11, fontWeight: 600,
+              letterSpacing: "0.02em", color: "#948e9c",
               borderBottom: "1px solid rgba(255,255,255,0.06)",
             }}>
               <span>선수</span>
@@ -242,10 +241,10 @@ export default function AdminPage() {
                     {a.birthDate}{a.teamName ? ` · ${a.teamName}` : ""}
                   </p>
                 </div>
-                <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12, color: "#cbc4d2" }}>{a.phone}</span>
+                <span style={{ fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)", fontSize: 12, color: "#cbc4d2" }}>{a.phone}</span>
                 <span style={{
                   display: "inline-block", padding: "3px 10px", borderRadius: 9999,
-                  fontFamily: "JetBrains Mono, monospace", fontSize: 11, fontWeight: 600,
+                  fontSize: 11, fontWeight: 600,
                   background: "rgba(207,188,255,0.1)", color: "#cfbcff",
                 }}>
                   {a.sport}
@@ -265,7 +264,7 @@ export default function AdminPage() {
 
         {/* Login hint */}
         <div style={{ marginTop: 24, padding: "16px 20px", background: "rgba(103,80,164,0.08)", border: "1px solid rgba(103,80,164,0.2)", borderRadius: 16 }}>
-          <p style={{ margin: "0 0 6px", fontFamily: "JetBrains Mono, monospace", fontSize: 10, fontWeight: 500, letterSpacing: "0.07em", textTransform: "uppercase", color: "#cfbcff" }}>
+          <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff" }}>
             로그인 방법
           </p>
           <p style={{ margin: 0, fontSize: 14, color: "#cbc4d2" }}>

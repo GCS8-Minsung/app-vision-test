@@ -7,7 +7,7 @@ const COPY: Record<RiskLevel, RiskResult> = {
   confirmed_candidate: {
     riskLevel: "confirmed_candidate",
     riskReason:
-      "입력된 정보 기준으로 즉시 고위험 후보로 분류되지는 않았습니다. 단, 최종 확인 결과는 아니며 경기기간, 투여경로, 용량에 따라 달라질 수 있습니다.",
+      "현재 데이터베이스 기준으로 금지 성분으로 분류되지 않았습니다. 단, 경기기간·투여경로·용량에 따라 결과가 달라질 수 있으므로 이 결과는 잠정적입니다.",
     recommendedAction: "KADA 공식 검색 또는 전문가 상담을 통해 최종 확인하세요."
   },
   needs_check: {

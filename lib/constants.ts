@@ -33,7 +33,7 @@ export const UPLOAD_TYPE_LABELS: Record<UploadType, string> = {
 };
 
 export const RISK_LABELS: Record<RiskLevel, string> = {
-  confirmed_candidate: "확인 완료 후보",
+  confirmed_candidate: "이상 없음 (잠정)",
   needs_check: "확인 필요",
   high_risk_candidate: "고위험 후보",
   unknown: "판정 불가"
@@ -41,10 +41,10 @@ export const RISK_LABELS: Record<RiskLevel, string> = {
 
 export const RISK_DESCRIPTIONS: Record<RiskLevel, string> = {
   confirmed_candidate:
-    "입력 정보 기준으로 즉시 고위험 후보로 분류되지는 않았지만, 최종 확인이 필요합니다.",
-  needs_check: "조건에 따라 리스크가 달라질 수 있어 추가 확인이 필요합니다.",
-  high_risk_candidate: "금지성분 또는 TUE 관련 확인이 필요할 수 있는 후보입니다.",
-  unknown: "정보가 부족해 분류할 수 없습니다."
+    "현재 데이터베이스 기준으로 금지 대상으로 즉시 분류되지 않았습니다. 경기기간·투여경로·용량에 따라 달라질 수 있으니 KADA에서 최종 확인하세요.",
+  needs_check: "성분·용량·경기기간 조건에 따라 리스크가 달라질 수 있어 추가 확인이 필요합니다.",
+  high_risk_candidate: "금지성분 또는 TUE 관련 확인이 필요할 수 있는 성분이 포함된 것으로 추정됩니다.",
+  unknown: "성분 정보가 부족하거나 불명확해 자동 분류할 수 없습니다."
 };
 
 export const INTAKE_STATUS_LABELS: Record<IntakeStatus, string> = {

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, LogOut } from "lucide-react";
 import { APP_NAME, AUTH_PATHS, FLOW_PATHS } from "@/lib/constants";
@@ -16,6 +15,12 @@ const FLOW_STEPS: Record<string, string> = {
   "/onboarding": "1 / 3",
   "/upload": "2 / 3",
   "/review": "3 / 3",
+};
+const PAGE_TITLES: Record<string, string> = {
+  "/": APP_NAME,
+  "/dashboard": "대시보드",
+  "/result": "분석 결과",
+  "/report": "리포트",
 };
 
 export function AppHeader() {
@@ -59,14 +64,13 @@ export function AppHeader() {
     );
   }
 
+  const pageTitle = PAGE_TITLES[pathname] ?? APP_NAME;
+
   return (
     <header className="app-header app-header-main print:hidden">
-      <Link
-        href="/dashboard"
-        style={{ fontSize: "15px", fontWeight: 700, color: "#e6e0e9", textDecoration: "none" }}
-      >
-        {APP_NAME}
-      </Link>
+      <span style={{ fontSize: "16px", fontWeight: 700, color: "#e6e0e9" }}>
+        {pageTitle}
+      </span>
       <button
         type="button"
         onClick={handleLogout}

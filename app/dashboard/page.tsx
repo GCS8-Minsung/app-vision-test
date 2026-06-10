@@ -43,10 +43,7 @@ export default function DashboardPage() {
           aria-hidden="true"
         />
         <div className="relative">
-          <p
-            className="text-[10px] font-medium uppercase tracking-widest mb-2"
-            style={{ fontFamily: "JetBrains Mono, monospace", color: "#cfbcff" }}
-          >
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 8 }}>
             대시보드
           </p>
           <div className="flex items-start justify-between gap-3">
@@ -71,7 +68,7 @@ export default function DashboardPage() {
           </div>
 
           {/* KPI grid */}
-          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="kpi-grid">
             <div className="metric-card">
               <span>최근 7일 기록</span>
               <strong>{recentLogs.length}</strong>
@@ -94,10 +91,7 @@ export default function DashboardPage() {
 
       {/* Action buttons */}
       <section className="section-card">
-        <p
-          className="text-[10px] font-medium uppercase tracking-widest mb-3"
-          style={{ fontFamily: "JetBrains Mono, monospace", color: "#948e9c" }}
-        >
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#948e9c", marginBottom: 12 }}>
           리포트 조회
         </p>
         <div className="space-y-2">
@@ -126,10 +120,7 @@ export default function DashboardPage() {
       <section>
         <div className="flex items-center gap-2 mb-3 px-1">
           <TrendingUp size={15} className="text-[#cfbcff]" />
-          <h2
-            className="text-[11px] font-medium uppercase tracking-widest text-[#948e9c]"
-            style={{ fontFamily: "JetBrains Mono, monospace" }}
-          >
+          <h2 style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: "#948e9c", margin: 0 }}>
             복용 기록
           </h2>
           {logs.length > 0 && (

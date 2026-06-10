@@ -41,10 +41,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="section-card mb-5">
-        <p
-          className="text-xs font-medium uppercase tracking-widest mb-3"
-          style={{ fontFamily: "JetBrains Mono, monospace", color: "#cfbcff" }}
-        >
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 12 }}>
           도핑수첩 MVP
         </p>
         {loggedIn && athleteName ? (
