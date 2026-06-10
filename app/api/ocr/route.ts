@@ -1,7 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 
-const client = new Anthropic();
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY ?? "");
 
 const EXTRACTION_PROMPT = `이 이미지는 한국의 약 봉투, 처방전, 또는 보충제 성분표입니다.
 이미지에서 다음 정보를 추출하여 JSON 형식으로만 응답하세요. 다른 설명은 절대 하지 마세요.
@@ -16,15 +16,6 @@ const EXTRACTION_PROMPT = `이 이미지는 한국의 약 봉투, 처방전, 또
 
 찾을 수 없는 항목은 반드시 빈 문자열("")로 응답합니다.`;
 
-type SupportedMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-
-function toSupportedMediaType(mimeType: string): SupportedMediaType {
-  const supported: SupportedMediaType[] = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  return supported.includes(mimeType as SupportedMediaType)
-    ? (mimeType as SupportedMediaType)
-    : "image/jpeg";
-}
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -36,27 +27,16 @@ export async function POST(request: NextRequest) {
 
     const buffer = await imageFile.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
-    const mediaType = toSupportedMediaType(imageFile.type);
+    const mimeType = imageFile.type || "image/jpeg";
 
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: mediaType, data: base64 },
-            },
-            { type: "text", text: EXTRACTION_PROMPT },
-          ],
-        },
-      ],
-    });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const rawText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const result = await model.generateContent([
+      { inlineData: { data: base64, mimeType } },
+      EXTRACTION_PROMPT,
+    ]);
+
+    const rawText = result.response.text();
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
