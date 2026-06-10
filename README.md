@@ -48,6 +48,8 @@ npm run dev
 
 브라우저에서 `http://localhost:3000`을 엽니다.
 
+Windows에서는 `start-clean-check.bat`를 실행하면 개발 서버를 시작하고 브라우저를 열 수 있습니다. 종료는 `stop-clean-check.bat`를 실행합니다.
+
 ## 6. 테스트 방법
 
 ```bash
