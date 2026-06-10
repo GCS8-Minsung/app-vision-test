@@ -1,5 +1,5 @@
 import type { RiskCheck, RiskLevel } from "./types";
-import { DATABASE_VERSION, findSubstanceEntry } from "./substanceDatabase";
+import { DATABASE_VERSION, findSubstanceMatch } from "./substanceDatabase";
 
 type RiskResult = Omit<RiskCheck, "id" | "itemId" | "createdAt">;
 
@@ -47,17 +47,21 @@ export function analyzeRisk(input: {
   }
 
   if (itemName && !ingredientName) {
-    const productMatch = findSubstanceEntry({ itemName, ingredientName });
+    const productMatch = findSubstanceMatch({ itemName, ingredientName });
     if (productMatch) {
+      const { entry } = productMatch;
       return {
-        riskLevel: productMatch.riskLevel,
-        riskReason: productMatch.reasonTemplate,
-        recommendedAction: productMatch.actionTemplate,
+        riskLevel: entry.riskLevel,
+        riskReason: entry.reasonTemplate,
+        recommendedAction: entry.actionTemplate,
         databaseMatch: {
-          substanceName: productMatch.primaryName,
-          wadaClass: productMatch.wadaClass,
-          sourceNames: productMatch.sourceIds,
-          databaseVersion: DATABASE_VERSION
+          substanceName: entry.primaryName,
+          wadaClass: entry.wadaClass,
+          sourceNames: entry.sourceIds,
+          databaseVersion: DATABASE_VERSION,
+          matchedTerm: productMatch.matchedTerm,
+          matchedBy: productMatch.matchedBy,
+          productAlias: productMatch.productAlias
         }
       };
     }
@@ -65,17 +69,21 @@ export function analyzeRisk(input: {
     return COPY.unknown;
   }
 
-  const databaseMatch = findSubstanceEntry({ itemName, ingredientName });
+  const databaseMatch = findSubstanceMatch({ itemName, ingredientName });
   if (databaseMatch) {
+    const { entry } = databaseMatch;
     return {
-      riskLevel: databaseMatch.riskLevel,
-      riskReason: databaseMatch.reasonTemplate,
-      recommendedAction: databaseMatch.actionTemplate,
+      riskLevel: entry.riskLevel,
+      riskReason: entry.reasonTemplate,
+      recommendedAction: entry.actionTemplate,
       databaseMatch: {
-        substanceName: databaseMatch.primaryName,
-        wadaClass: databaseMatch.wadaClass,
-        sourceNames: databaseMatch.sourceIds,
-        databaseVersion: DATABASE_VERSION
+        substanceName: entry.primaryName,
+        wadaClass: entry.wadaClass,
+        sourceNames: entry.sourceIds,
+        databaseVersion: DATABASE_VERSION,
+        matchedTerm: databaseMatch.matchedTerm,
+        matchedBy: databaseMatch.matchedBy,
+        productAlias: databaseMatch.productAlias
       }
     };
   }

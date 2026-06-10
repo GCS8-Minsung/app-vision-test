@@ -4,9 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MedicationForm, type MedicationFormValue } from "@/components/MedicationForm";
 import { StepIndicator } from "@/components/StepIndicator";
+import { parseCompoundIngredients } from "@/lib/compoundIngredients";
 import { createId } from "@/lib/ids";
+import { formatIngredients, searchMedicationProducts, type MedicationSearchResult } from "@/lib/medicationDatabase";
+import { buildOcrFieldConfidence } from "@/lib/ocrConfidence";
+import { getHighestRiskLevel } from "@/lib/riskRanking";
 import { analyzeRisk } from "@/lib/riskEngine";
 import { draftStorage, storage } from "@/lib/storage";
+import type { OcrFieldConfidence, VerificationKey } from "@/lib/types";
 
 const EMPTY_FORM: MedicationFormValue = {
   itemName: "", ingredientName: "", dosage: "", hospitalName: "", conditionName: ""
@@ -26,6 +31,9 @@ export default function ReviewPage() {
   const router = useRouter();
   const [value, setValue] = useState<MedicationFormValue>(EMPTY_FORM);
   const [ocrSourceLabel, setOcrSourceLabel] = useState("");
+  const [confidence, setConfidence] = useState<OcrFieldConfidence>();
+  const [lookupResults, setLookupResults] = useState<MedicationSearchResult[]>([]);
+  const [verifiedFields, setVerifiedFields] = useState<VerificationKey[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -33,8 +41,26 @@ export default function ReviewPage() {
     if (draft) {
       setValue(draft);
       setOcrSourceLabel(getOcrSourceLabel(draft.source, draft.confidence));
+      setConfidence(buildOcrFieldConfidence(draft));
+      setLookupResults(searchMedicationProducts(draft.itemName));
     }
   }, []);
+
+  useEffect(() => {
+    setLookupResults(searchMedicationProducts(value.itemName));
+  }, [value.itemName]);
+
+  function applyMedicationLookup(result: MedicationSearchResult) {
+    const next = {
+      ...value,
+      ingredientName: formatIngredients(result.entry.ingredients),
+      dosage: result.entry.dosage ?? value.dosage,
+      itemName: value.itemName.trim() || result.entry.productName
+    };
+    setValue(next);
+    setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
+    setVerifiedFields((current) => Array.from(new Set([...current, "ingredient_checked", "dosage_checked"])));
+  }
 
   function handleSubmit() {
     const profile = storage.getProfile();
@@ -43,7 +69,6 @@ export default function ReviewPage() {
     if (!value.itemName.trim()) { setError("약 이름/제품명을 입력해주세요."); return; }
 
     const itemId = createId("item");
-    const riskId = createId("risk");
     const now = new Date().toISOString();
     const item = {
       id: itemId, uploadId, userId: profile.id,
@@ -52,12 +77,53 @@ export default function ReviewPage() {
       dosage: value.dosage.trim() || undefined,
       hospitalName: value.hospitalName.trim() || undefined,
       conditionName: value.conditionName.trim() || undefined,
-      userConfirmed: true, createdAt: now
+      userConfirmed: true,
+      ocrConfidence: confidence,
+      userVerifiedFields: verifiedFields,
+      createdAt: now
     };
-    const risk = analyzeRisk(item);
+
     storage.saveExtractedItem(item);
-    storage.saveRiskCheck({ id: riskId, itemId, ...risk, createdAt: now });
-    draftStorage.saveCurrentResult(itemId, riskId);
+
+    const substances = parseCompoundIngredients({
+      ingredientName: item.ingredientName,
+      dosage: item.dosage
+    });
+    const riskIds: { id: string; level: ReturnType<typeof analyzeRisk>["riskLevel"] }[] = [];
+
+    if (substances.length > 0) {
+      substances.forEach((substance) => {
+        const substanceId = createId("substance");
+        const riskId = createId("risk");
+        const substanceRecord = {
+          id: substanceId,
+          itemId,
+          userId: profile.id,
+          ingredientName: substance.ingredientName,
+          dosage: substance.dosage,
+          sourceText: substance.sourceText,
+          createdAt: now
+        };
+        const risk = analyzeRisk({
+          itemName: item.itemName,
+          ingredientName: substance.ingredientName,
+          dosage: substance.dosage
+        });
+
+        storage.saveExtractedSubstance(substanceRecord);
+        storage.saveRiskCheck({ id: riskId, itemId, substanceId, ...risk, createdAt: now });
+        riskIds.push({ id: riskId, level: risk.riskLevel });
+      });
+    } else {
+      const riskId = createId("risk");
+      const risk = analyzeRisk(item);
+      storage.saveRiskCheck({ id: riskId, itemId, ...risk, createdAt: now });
+      riskIds.push({ id: riskId, level: risk.riskLevel });
+    }
+
+    const highestLevel = getHighestRiskLevel(riskIds.map((risk) => risk.level));
+    const representativeRisk = riskIds.find((risk) => risk.level === highestLevel) ?? riskIds[0];
+    draftStorage.saveCurrentResult(itemId, representativeRisk.id);
     router.push("/result");
   }
 
@@ -86,7 +152,80 @@ export default function ReviewPage() {
           </div>
         )}
 
-        <MedicationForm value={value} error={error} onChange={setValue} onSubmit={handleSubmit} />
+        {lookupResults.length > 0 && (
+          <div
+            className="rounded-xl p-3 text-sm"
+            style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+          >
+            <div className="mb-3">
+              <p className="font-semibold text-[#e6e0e9]">약 이름 기반 DB 검색 후보</p>
+              <p className="mt-1 text-xs text-[#948e9c]">
+                OCR 정보가 부족하면 후보를 적용한 뒤 실제 포장·처방전과 다시 대조하세요.
+              </p>
+            </div>
+            <div className="space-y-2">
+              {lookupResults.map((result) => (
+                <div
+                  key={result.entry.id}
+                  className="rounded-xl p-3"
+                  style={{ background: "#141218", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-semibold text-[#e6e0e9]">{result.entry.productName}</p>
+                      <p className="mt-1 text-xs text-[#cbc4d2]">
+                        성분: {formatIngredients(result.entry.ingredients)}
+                      </p>
+                      <p className="mt-0.5 text-xs text-[#cbc4d2]">
+                        용량: {result.entry.dosage ?? "제품 이미지 또는 처방전에서 확인 필요"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-[#948e9c]">
+                        매칭: {result.matchedName} · 점수 {result.score}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="secondary-button px-3 text-xs"
+                      onClick={() => applyMedicationLookup(result)}
+                    >
+                      성분·용량 적용
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {parseCompoundIngredients({ ingredientName: value.ingredientName, dosage: value.dosage }).length > 1 && (
+          <div
+            className="rounded-xl p-3 text-sm"
+            style={{ background: "#1e262d", border: "1px solid #3d4a56", color: "#cbc4d2" }}
+          >
+            <p className="mb-2 font-semibold text-[#e6e0e9]">복합 성분으로 분리될 항목</p>
+            <ul className="space-y-1">
+              {parseCompoundIngredients({ ingredientName: value.ingredientName, dosage: value.dosage }).map((substance) => (
+                <li key={substance.ingredientName}>
+                  {substance.ingredientName}
+                  {substance.dosage ? ` · ${substance.dosage}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <MedicationForm
+          value={value}
+          error={error}
+          confidence={confidence}
+          verifiedFields={verifiedFields}
+          onVerifiedChange={setVerifiedFields}
+          onChange={(next) => {
+            setValue(next);
+            setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
+          }}
+          onSubmit={handleSubmit}
+        />
       </div>
     </main>
   );

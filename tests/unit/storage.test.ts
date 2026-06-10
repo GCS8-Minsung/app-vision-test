@@ -56,6 +56,20 @@ describe("storage", () => {
     expect(storage.getRiskChecks()[0].riskLevel).toBe("high_risk_candidate");
   });
 
+  it("saves and reads extracted substances", () => {
+    storage.saveExtractedSubstance({
+      id: "substance_1",
+      itemId: "item_1",
+      userId: "profile_1",
+      ingredientName: "pseudoephedrine",
+      dosage: "60mg",
+      sourceText: "pseudoephedrine 60mg",
+      createdAt: "2026-06-10T00:00:00.000Z"
+    });
+
+    expect(storage.getExtractedSubstances()[0].ingredientName).toBe("pseudoephedrine");
+  });
+
   it("saves and reads intake logs", () => {
     storage.saveIntakeLog({
       id: "log_1",

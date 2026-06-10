@@ -2,6 +2,7 @@ import { isWithinLastDays } from "./dateRange";
 import type {
   AthleteProfile,
   ExtractedItem,
+  ExtractedSubstance,
   IntakeLog,
   ReportData,
   RiskCheck,
@@ -22,6 +23,7 @@ export function buildReportData(input: {
   risks: RiskCheck[];
   logs: IntakeLog[];
   uploads?: UploadRecord[];
+  substances?: ExtractedSubstance[];
   days: 7 | 14 | 30;
   now?: Date;
 }): ReportData {
@@ -31,17 +33,24 @@ export function buildReportData(input: {
 
   const counts = { ...EMPTY_COUNTS };
   const uploads = input.uploads ?? [];
+  const substances = input.substances ?? [];
 
   const reportItems = includedLogs.map((log) => {
     const item = input.items.find((candidate) => candidate.id === log.itemId) ?? null;
-    const risk = item ? input.risks.find((candidate) => candidate.itemId === item.id) ?? null : null;
+    const risks = item ? input.risks.filter((candidate) => candidate.itemId === item.id) : [];
+    const risk = risks.find((candidate) => candidate.riskLevel === "high_risk_candidate") ??
+      risks.find((candidate) => candidate.riskLevel === "needs_check") ??
+      risks.find((candidate) => candidate.riskLevel === "confirmed_candidate") ??
+      risks.find((candidate) => candidate.riskLevel === "unknown") ??
+      null;
+    const itemSubstances = item ? substances.filter((candidate) => candidate.itemId === item.id) : [];
     const upload = item ? uploads.find((candidate) => candidate.id === item.uploadId) ?? null : null;
 
-    if (risk) {
-      counts[risk.riskLevel] += 1;
+    if (risks.length > 0) {
+      risks.forEach((candidate) => { counts[candidate.riskLevel] += 1; });
     }
 
-    return { log, item, risk, upload };
+    return { log, item, risk, risks, substances: itemSubstances, upload };
   });
 
   return {

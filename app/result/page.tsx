@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { IntakeForm } from "@/components/IntakeForm";
 import { RiskBadge } from "@/components/RiskBadge";
-import { RISK_LABELS } from "@/lib/constants";
+import { OFFICIAL_CHECK_LINKS, RISK_LABELS, VERIFICATION_LABELS } from "@/lib/constants";
 import { createId } from "@/lib/ids";
 import { draftStorage, storage } from "@/lib/storage";
-import type { ExtractedItem, RiskCheck } from "@/lib/types";
+import { getSourceUrl } from "@/lib/substanceDatabase";
+import type { ExtractedItem, ExtractedSubstance, RiskCheck, VerificationKey } from "@/lib/types";
 
 const RISK_COLORS: Record<string, string> = {
   high_risk_candidate: "rgba(255,180,171,0.08)",
@@ -33,12 +34,16 @@ export default function ResultPage() {
   const router = useRouter();
   const [item, setItem] = useState<ExtractedItem | null>(null);
   const [risk, setRisk] = useState<RiskCheck | null>(null);
+  const [risks, setRisks] = useState<RiskCheck[]>([]);
+  const [substances, setSubstances] = useState<ExtractedSubstance[]>([]);
 
   useEffect(() => {
     const current = draftStorage.getCurrentResult();
     if (!current) return;
     setItem(storage.getExtractedItems().find((c) => c.id === current.itemId) ?? null);
     setRisk(storage.getRiskChecks().find((c) => c.id === current.riskId) ?? null);
+    setRisks(storage.getRiskChecks().filter((c) => c.itemId === current.itemId));
+    setSubstances(storage.getExtractedSubstances().filter((c) => c.itemId === current.itemId));
   }, []);
 
   if (!item || !risk) {
@@ -92,9 +97,105 @@ export default function ResultPage() {
             <p className="text-[#cbc4d2]">성분 후보: {risk.databaseMatch.substanceName}</p>
             <p className="text-[#cbc4d2]">분류: {risk.databaseMatch.wadaClass}</p>
             <p className="text-[#cbc4d2]">DB 버전: {risk.databaseMatch.databaseVersion}</p>
+            {risk.databaseMatch.matchedTerm && (
+              <p className="text-[#cbc4d2]">매칭 기준: {risk.databaseMatch.matchedTerm}</p>
+            )}
+            {risk.databaseMatch.productAlias && (
+              <p className="text-[#cbc4d2]">제품명 alias: {risk.databaseMatch.productAlias}</p>
+            )}
             <p className="text-[#cbc4d2]">출처: {risk.databaseMatch.sourceNames.join(", ")}</p>
           </div>
         )}
+
+        {risks.length > 1 && (
+          <div
+            className="rounded-xl p-3 text-sm leading-6"
+            style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 6 }}>
+              성분별 확인 결과
+            </p>
+            <div className="space-y-3">
+              {risks.map((candidate) => {
+                const substance = substances.find((entry) => entry.id === candidate.substanceId);
+                return (
+                  <div key={candidate.id} className="rounded-lg p-3" style={{ background: "#141218" }}>
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <RiskBadge riskLevel={candidate.riskLevel} compact />
+                      <span className="font-semibold text-[#e6e0e9]">
+                        {substance?.ingredientName ?? candidate.databaseMatch?.substanceName ?? item.ingredientName}
+                      </span>
+                    </div>
+                    {substance?.dosage && <p className="text-[#cbc4d2]">용량: {substance.dosage}</p>}
+                    {candidate.databaseMatch?.matchedTerm && (
+                      <p className="text-[#948e9c]">매칭 기준: {candidate.databaseMatch.matchedTerm}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {item.userVerifiedFields && item.userVerifiedFields.length > 0 && (
+          <div
+            className="rounded-xl p-3 text-sm leading-6"
+            style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 6 }}>
+              사용자 확인 기록
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {item.userVerifiedFields.map((key) => (
+                <span
+                  key={key}
+                  className="rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style={{ background: "rgba(207,188,255,0.1)", color: "#cfbcff", border: "1px solid rgba(207,188,255,0.25)" }}
+                >
+                  {VERIFICATION_LABELS[key as VerificationKey]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div
+          className="rounded-xl p-3 text-sm leading-6"
+          style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+        >
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 6 }}>
+            확인 링크
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {OFFICIAL_CHECK_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ background: "rgba(207,188,255,0.1)", color: "#cfbcff", border: "1px solid rgba(207,188,255,0.25)" }}
+              >
+                {link.label}
+              </a>
+            ))}
+            {risk.databaseMatch?.sourceNames
+              .map((source) => ({ source, href: getSourceUrl(source) }))
+              .filter((source): source is { source: string; href: string } => Boolean(source.href))
+              .map((source) => (
+                <a
+                  key={source.source}
+                  href={source.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ background: "rgba(231,195,101,0.1)", color: "#e7c365", border: "1px solid rgba(231,195,101,0.25)" }}
+                >
+                  {source.source}
+                </a>
+              ))}
+          </div>
+        </div>
 
         <Disclaimer />
       </section>

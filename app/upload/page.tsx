@@ -1,11 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ChangeEvent, DragEvent, FormEvent } from "react";
+import type { ChangeEvent, DragEvent, FormEvent, MouseEvent } from "react";
 import { useState } from "react";
-import { AlertTriangle, Camera, CloudUpload, ImagePlus } from "lucide-react";
+import { AlertTriangle, Camera, CloudUpload, ImagePlus, Shield, Undo2 } from "lucide-react";
 import { StepIndicator } from "@/components/StepIndicator";
-import { UploadCard } from "@/components/UploadCard";
 import { UPLOAD_TYPE_LABELS } from "@/lib/constants";
 import { createId } from "@/lib/ids";
 import { extractMedicationInfo } from "@/lib/ocr";
@@ -21,6 +20,59 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+interface MaskBox {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function dataUrlToFile(dataUrl: string, fileName: string): File {
+  const [meta, base64] = dataUrl.split(",");
+  const mimeType = meta.match(/data:(.*?);base64/)?.[1] ?? "image/jpeg";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new File([bytes], fileName.replace(/\.[^.]+$/, "-masked.jpg"), { type: mimeType });
+}
+
+function applyMasks(dataUrl: string, masks: MaskBox[], fileName: string): Promise<{ dataUrl: string; file: File }> {
+  if (masks.length === 0) {
+    return Promise.resolve({ dataUrl, file: dataUrlToFile(dataUrl, fileName) });
+  }
+
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("이미지 마스킹을 처리할 수 없습니다."));
+        return;
+      }
+      context.drawImage(image, 0, 0);
+      context.fillStyle = "#050505";
+      masks.forEach((mask) => {
+        context.fillRect(
+          (mask.x / 100) * canvas.width,
+          (mask.y / 100) * canvas.height,
+          (mask.width / 100) * canvas.width,
+          (mask.height / 100) * canvas.height
+        );
+      });
+      const masked = canvas.toDataURL("image/jpeg", 0.92);
+      resolve({ dataUrl: masked, file: dataUrlToFile(masked, fileName) });
+    };
+    image.onerror = () => reject(new Error("이미지를 읽을 수 없습니다."));
+    image.src = dataUrl;
+  });
+}
+
 export default function UploadPage() {
   const router = useRouter();
   const [uploadType, setUploadType] = useState<UploadType>("medicine_package");
@@ -30,6 +82,8 @@ export default function UploadPage() {
   const [submitting, setSubmitting] = useState(false);
   const [ocrStatus, setOcrStatus] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [maskMode, setMaskMode] = useState(false);
+  const [masks, setMasks] = useState<MaskBox[]>([]);
 
   async function handleSelectedFile(nextFile: File | null) {
     setError("");
@@ -38,6 +92,7 @@ export default function UploadPage() {
     if (!nextFile) {
       setFile(null);
       setPreview("");
+      setMasks([]);
       return;
     }
 
@@ -45,12 +100,14 @@ export default function UploadPage() {
     if (!isImage) {
       setFile(null);
       setPreview("");
+      setMasks([]);
       setError("이미지 파일만 업로드할 수 있습니다.");
       return;
     }
 
     setFile(nextFile);
     setPreview(await fileToDataUrl(nextFile));
+    setMasks([]);
   }
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
@@ -85,14 +142,32 @@ export default function UploadPage() {
     setSubmitting(true);
     setOcrStatus("이미지에서 글자를 읽는 중입니다. 잠시만 기다려주세요.");
     const uploadId = createId("upload");
+    const masked = await applyMasks(preview, masks, file.name);
     storage.saveUpload({
       id: uploadId, userId: profile.id, uploadType,
-      imageDataUrl: preview, fileName: file.name, createdAt: new Date().toISOString()
+      imageDataUrl: masked.dataUrl, fileName: masked.file.name, createdAt: new Date().toISOString()
     });
     draftStorage.saveDraftUploadId(uploadId);
-    const extracted = await extractMedicationInfo(file);
+    const extracted = await extractMedicationInfo(masked.file);
     draftStorage.saveDraftOcr(extracted);
     router.push("/review");
+  }
+
+  function handleMaskClick(event: MouseEvent<HTMLDivElement>) {
+    if (!maskMode) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    setMasks((current) => [
+      ...current,
+      {
+        id: createId("mask"),
+        x: Math.max(0, Math.min(82, x - 9)),
+        y: Math.max(0, Math.min(90, y - 5)),
+        width: 18,
+        height: 10
+      }
+    ]);
   }
 
   return (
@@ -184,7 +259,62 @@ export default function UploadPage() {
             />
           </div>
 
-          {preview && <UploadCard preview={preview} fileName={file?.name} />}
+          {preview && (
+            <div className="space-y-3">
+              <div
+                className="relative overflow-hidden rounded-2xl"
+                style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+                onClick={handleMaskClick}
+              >
+                <img
+                  src={preview}
+                  alt="업로드 이미지 미리보기"
+                  className="block w-full"
+                  style={{ maxHeight: 360, objectFit: "contain" }}
+                />
+                {masks.map((mask) => (
+                  <span
+                    key={mask.id}
+                    aria-hidden="true"
+                    className="absolute rounded-sm"
+                    style={{
+                      left: `${mask.x}%`,
+                      top: `${mask.y}%`,
+                      width: `${mask.width}%`,
+                      height: `${mask.height}%`,
+                      background: "#050505",
+                      border: "1px solid rgba(255,255,255,0.35)"
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-[#948e9c]">{file?.name}</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setMaskMode((current) => !current)}
+                >
+                  <Shield size={17} aria-hidden="true" />
+                  {maskMode ? "가림 위치 선택 중" : "가림 박스 추가"}
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setMasks((current) => current.slice(0, -1))}
+                  disabled={masks.length === 0}
+                >
+                  <Undo2 size={17} aria-hidden="true" />
+                  마지막 가림 취소
+                </button>
+              </div>
+              {maskMode && (
+                <p className="text-xs text-[#cbc4d2]">
+                  이미지에서 가릴 위치를 탭하면 검은 박스가 추가됩니다.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-2 sm:grid-cols-2">
             <label

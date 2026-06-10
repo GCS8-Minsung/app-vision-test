@@ -54,19 +54,20 @@ test("happy path", async ({ page }) => {
   await expect(page).toHaveURL(/\/review/);
   await page.getByLabel("약 이름/제품명").fill("콘서타정");
   await page.getByLabel("성분명").fill("methylphenidate");
-  await page.getByLabel("용량").fill("18mg");
+  await page.getByLabel("용량", { exact: true }).fill("18mg");
   await page.getByTestId("review-submit").click();
 
   await expect(page).toHaveURL(/\/result/);
   await expect(page.getByText("고위험 후보").first()).toBeVisible();
   await page.getByTestId("intake-status-taken").click();
-  await expect(page.getByLabel("용량")).toHaveValue("18mg");
+  await expect(page.getByLabel("용량", { exact: true })).toHaveValue("18mg");
   await page.getByTestId("intake-save").click();
 
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByTestId("dashboard")).toContainText("최근 7일 기록");
   await expect(page.getByText("1").first()).toBeVisible();
-  await page.getByTestId("report-7-button").click();
+  await page.getByTestId("report-7-button").focus();
+  await page.keyboard.press("Enter");
 
   await expect(page).toHaveURL(/\/report\?days=7/);
   await expect(page.getByTestId("report-view")).toContainText("김도핑");

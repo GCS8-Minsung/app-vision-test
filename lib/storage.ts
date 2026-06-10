@@ -3,6 +3,7 @@ import type { MedicationOcrResult } from "./ocrParser";
 import type {
   AthleteProfile,
   ExtractedItem,
+  ExtractedSubstance,
   IntakeLog,
   RiskCheck,
   UploadRecord
@@ -17,6 +18,8 @@ export interface DopingNoteRepository {
   saveUpload(upload: UploadRecord): Promise<void>;
   getExtractedItems(): Promise<ExtractedItem[]>;
   saveExtractedItem(item: ExtractedItem): Promise<void>;
+  getExtractedSubstances(): Promise<ExtractedSubstance[]>;
+  saveExtractedSubstance(substance: ExtractedSubstance): Promise<void>;
   getRiskChecks(): Promise<RiskCheck[]>;
   saveRiskCheck(check: RiskCheck): Promise<void>;
   getIntakeLogs(): Promise<IntakeLog[]>;
@@ -75,6 +78,12 @@ export const storage = {
   },
   updateExtractedItem(item: ExtractedItem): void {
     writeJson(STORAGE_KEYS.extractedItems, upsertById(this.getExtractedItems(), item));
+  },
+  getExtractedSubstances(): ExtractedSubstance[] {
+    return readJson<ExtractedSubstance[]>(STORAGE_KEYS.extractedSubstances, []);
+  },
+  saveExtractedSubstance(substance: ExtractedSubstance): void {
+    writeJson(STORAGE_KEYS.extractedSubstances, [...this.getExtractedSubstances(), substance]);
   },
   getRiskChecks(): RiskCheck[] {
     return readJson<RiskCheck[]>(STORAGE_KEYS.riskChecks, []);
@@ -153,6 +162,14 @@ export class LocalStorageRepository implements DopingNoteRepository {
 
   async saveExtractedItem(item: ExtractedItem): Promise<void> {
     storage.saveExtractedItem(item);
+  }
+
+  async getExtractedSubstances(): Promise<ExtractedSubstance[]> {
+    return storage.getExtractedSubstances();
+  }
+
+  async saveExtractedSubstance(substance: ExtractedSubstance): Promise<void> {
+    storage.saveExtractedSubstance(substance);
   }
 
   async getRiskChecks(): Promise<RiskCheck[]> {

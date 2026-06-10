@@ -34,6 +34,13 @@ export interface MedicationAliasEntry {
   note: string;
 }
 
+export interface SubstanceMatch {
+  entry: ProhibitedSubstanceEntry;
+  matchedTerm: string;
+  matchedBy: "ingredient" | "product_alias";
+  productAlias?: string;
+}
+
 export const DATABASE_VERSION = "2026.4-expanded-aliases";
 
 export const DATABASE_SOURCES: SubstanceDatabaseSource[] = [
@@ -1129,6 +1136,13 @@ export function findSubstanceEntry(input: {
   itemName: string;
   ingredientName?: string;
 }): ProhibitedSubstanceEntry | null {
+  return findSubstanceMatch(input)?.entry ?? null;
+}
+
+export function findSubstanceMatch(input: {
+  itemName: string;
+  ingredientName?: string;
+}): SubstanceMatch | null {
   const medicationAlias = findMedicationAlias(input.itemName);
   const target = `${input.itemName} ${input.ingredientName ?? ""} ${medicationAlias?.ingredientName ?? ""}`;
 
@@ -1138,5 +1152,21 @@ export function findSubstanceEntry(input: {
     return secondLongest - firstLongest;
   });
 
-  return sortedEntries.find((entry) => getEntryTerms(entry).some((alias) => containsTerm(target, alias))) ?? null;
+  for (const entry of sortedEntries) {
+    const matchedTerm = getEntryTerms(entry).find((alias) => containsTerm(target, alias));
+    if (matchedTerm) {
+      return {
+        entry,
+        matchedTerm,
+        matchedBy: medicationAlias?.ingredientName === entry.primaryName ? "product_alias" : "ingredient",
+        productAlias: medicationAlias?.ingredientName === entry.primaryName ? medicationAlias.productName : undefined
+      };
+    }
+  }
+
+  return null;
+}
+
+export function getSourceUrl(sourceName: string): string | null {
+  return DATABASE_SOURCES.find((source) => source.name === sourceName)?.url ?? null;
 }

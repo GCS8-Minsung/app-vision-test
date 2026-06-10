@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, PlusCircle, Shield, TrendingUp } from "lucide-react";
+import { Bell, FileText, PlusCircle, Shield, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
 import { EmptyState } from "@/components/EmptyState";
@@ -25,6 +25,10 @@ export default function DashboardPage() {
   }, []);
 
   const recentLogs = logs.filter((log) => isWithinLastDays(log.intakeDate, 7));
+  const today = new Date().toISOString().slice(0, 10);
+  const plannedLogs = logs
+    .filter((log) => log.intakeStatus === "planned" && log.intakeDate >= today)
+    .sort((a, b) => `${a.intakeDate} ${a.intakeTime}`.localeCompare(`${b.intakeDate} ${b.intakeTime}`));
   const counts = {
     needsCheck: risks.filter((r) => r.riskLevel === "needs_check").length,
     highRisk: risks.filter((r) => r.riskLevel === "high_risk_candidate").length,
@@ -88,6 +92,33 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {plannedLogs.length > 0 && (
+        <section className="section-card">
+          <div className="mb-3 flex items-center gap-2">
+            <Bell size={16} className="text-[#e7c365]" />
+            <h2 className="text-sm font-semibold text-[#e6e0e9]">복용 예정 리마인더</h2>
+          </div>
+          <div className="space-y-2">
+            {plannedLogs.map((log) => {
+              const item = items.find((candidate) => candidate.id === log.itemId);
+              return (
+                <div
+                  key={log.id}
+                  className="rounded-xl p-3 text-sm"
+                  style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+                >
+                  <p className="font-semibold text-[#e6e0e9]">{item?.itemName ?? "이름 없는 기록"}</p>
+                  <p className="text-[#cbc4d2]">{log.intakeDate} {log.intakeTime}</p>
+                  {(log.dosage || item?.dosage) && (
+                    <p className="text-xs text-[#948e9c]">용량: {log.dosage || item?.dosage}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Action buttons */}
       <section className="section-card">

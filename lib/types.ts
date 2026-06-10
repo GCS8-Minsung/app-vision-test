@@ -14,6 +14,19 @@ export type IntakeStatus =
   | "taken"
   | "planned";
 
+export type VerificationKey =
+  | "ingredient_checked"
+  | "dosage_checked"
+  | "competition_period_checked"
+  | "expert_consult_planned"
+  | "expert_consult_done";
+
+export interface OcrFieldConfidence {
+  itemName: "high" | "medium" | "low" | "missing";
+  ingredientName: "high" | "medium" | "low" | "missing";
+  dosage: "high" | "medium" | "low" | "missing";
+}
+
 export interface AthleteProfile {
   id: string;
   name: string;
@@ -52,12 +65,25 @@ export interface ExtractedItem {
   hospitalName?: string;
   conditionName?: string;
   userConfirmed: boolean;
+  ocrConfidence?: OcrFieldConfidence;
+  userVerifiedFields?: VerificationKey[];
+  createdAt: string;
+}
+
+export interface ExtractedSubstance {
+  id: string;
+  itemId: string;
+  userId: string;
+  ingredientName: string;
+  dosage?: string;
+  sourceText: string;
   createdAt: string;
 }
 
 export interface RiskCheck {
   id: string;
   itemId: string;
+  substanceId?: string;
   riskLevel: RiskLevel;
   riskReason: string;
   recommendedAction: string;
@@ -66,6 +92,9 @@ export interface RiskCheck {
     wadaClass: string;
     sourceNames: string[];
     databaseVersion: string;
+    matchedTerm?: string;
+    matchedBy?: "ingredient" | "product_alias" | "fallback_rule";
+    productAlias?: string;
   };
   createdAt: string;
 }
@@ -86,6 +115,8 @@ export interface ReportItem {
   log: IntakeLog;
   item: ExtractedItem | null;
   risk: RiskCheck | null;
+  risks: RiskCheck[];
+  substances: ExtractedSubstance[];
   upload: UploadRecord | null;
 }
 

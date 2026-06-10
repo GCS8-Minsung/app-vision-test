@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { RISK_LABELS } from "@/lib/constants";
+import { RISK_LABELS, VERIFICATION_LABELS } from "@/lib/constants";
 import type { ReportData } from "@/lib/types";
 import { Disclaimer } from "./Disclaimer";
 import { RiskBadge } from "./RiskBadge";
@@ -52,7 +52,7 @@ export function ReportView({ report }: { report: ReportData }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {report.items.map(({ log, item, risk, upload }) => (
+          {report.items.map(({ log, item, risk, risks, substances, upload }) => (
             <article
               key={log.id}
               className="rounded-2xl p-4 print:bg-white print:shadow-none"
@@ -81,7 +81,7 @@ export function ReportView({ report }: { report: ReportData }) {
                     {risk && <RiskBadge riskLevel={risk.riskLevel} compact />}
                   </div>
                   <p className="text-xs text-[#cbc4d2]">
-                    성분명: {item?.ingredientName || "미입력"}
+                    성분명: {substances.length > 0 ? substances.map((substance) => substance.ingredientName).join(" + ") : item?.ingredientName || "미입력"}
                   </p>
                   <p className="mt-0.5 text-xs text-[#cbc4d2]">
                     용량: {log.dosage || item?.dosage || "미입력"}
@@ -92,6 +92,24 @@ export function ReportView({ report }: { report: ReportData }) {
                   {risk?.databaseMatch && (
                     <p className="mt-0.5 text-xs text-[#948e9c]">
                       DB 매칭: {risk.databaseMatch.substanceName} · {risk.databaseMatch.wadaClass}
+                    </p>
+                  )}
+                  {risks.length > 1 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {risks.map((candidate) => (
+                        <span
+                          key={candidate.id}
+                          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{ background: "#1e262d", color: "#cbc4d2", border: "1px solid #3d4a56" }}
+                        >
+                          {candidate.databaseMatch?.substanceName ?? "성분"} · {RISK_LABELS[candidate.riskLevel]}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {item?.userVerifiedFields && item.userVerifiedFields.length > 0 && (
+                    <p className="mt-2 text-xs text-[#948e9c]">
+                      사용자 확인: {item.userVerifiedFields.map((key) => VERIFICATION_LABELS[key]).join(", ")}
                     </p>
                   )}
                 </div>

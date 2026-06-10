@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildReportData } from "@/lib/report";
-import type { AthleteProfile, ExtractedItem, IntakeLog, RiskCheck } from "@/lib/types";
+import type { AthleteProfile, ExtractedItem, ExtractedSubstance, IntakeLog, RiskCheck } from "@/lib/types";
 
 const profile: AthleteProfile = {
   id: "profile_1",
@@ -31,6 +31,18 @@ const risks: RiskCheck[] = [
     riskLevel: "high_risk_candidate",
     riskReason: "확인 필요",
     recommendedAction: "전문가 상담",
+    createdAt: "2026-06-10T00:00:00.000Z"
+  }
+];
+
+const substances: ExtractedSubstance[] = [
+  {
+    id: "substance_1",
+    itemId: "item_1",
+    userId: "profile_1",
+    ingredientName: "methylphenidate",
+    dosage: "18mg",
+    sourceText: "methylphenidate 18mg",
     createdAt: "2026-06-10T00:00:00.000Z"
   }
 ];
@@ -66,9 +78,11 @@ describe("buildReportData", () => {
   });
 
   it("joins item and risk data", () => {
-    const report = buildReportData({ profile, items, risks, logs, days: 7, now: new Date("2026-06-10T12:00:00+09:00") });
+    const report = buildReportData({ profile, items, risks, logs, substances, days: 7, now: new Date("2026-06-10T12:00:00+09:00") });
     expect(report.items[0].item?.itemName).toBe("콘서타정");
     expect(report.items[0].risk?.riskLevel).toBe("high_risk_candidate");
+    expect(report.items[0].substances[0].ingredientName).toBe("methylphenidate");
+    expect(report.items[0].risks).toHaveLength(1);
   });
 
   it("counts risk levels", () => {
