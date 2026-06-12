@@ -2,6 +2,7 @@ import Image from "next/image";
 import { RISK_LABELS, VERIFICATION_LABELS } from "@/lib/constants";
 import type { ReportData } from "@/lib/types";
 import { Disclaimer } from "./Disclaimer";
+import { IngredientCompositionGraph } from "./IngredientCompositionGraph";
 import { RiskBadge } from "./RiskBadge";
 
 export function ReportView({ report }: { report: ReportData }) {
@@ -81,11 +82,23 @@ export function ReportView({ report }: { report: ReportData }) {
                     {risk && <RiskBadge riskLevel={risk.riskLevel} compact />}
                   </div>
                   <p className="text-xs text-[#cbc4d2]">
-                    성분명: {substances.length > 0 ? substances.map((substance) => substance.ingredientName).join(" + ") : item?.ingredientName || "미입력"}
+                    성분: {item?.ingredients?.length
+                      ? item.ingredients.map((ingredient) => ingredient.name).join(" + ")
+                      : substances.length > 0
+                        ? substances.map((substance) => substance.ingredientName).join(" + ")
+                        : item?.ingredientName || "미입력"}
                   </p>
                   <p className="mt-0.5 text-xs text-[#cbc4d2]">
-                    용량: {log.dosage || item?.dosage || "미입력"}
+                    성분 함량: {item?.dosage || log.dosage || "미입력"}
                   </p>
+                  <p className="mt-0.5 text-xs text-[#cbc4d2]">
+                    복용량: {log.intakeAmount || item?.intakeAmount || "미입력"}
+                  </p>
+                  {item?.ingredients && item.ingredients.length > 1 && (
+                    <div className="mt-2">
+                      <IngredientCompositionGraph ingredients={item.ingredients} compact />
+                    </div>
+                  )}
                   <p className="mt-0.5 text-xs text-[#948e9c]">
                     {log.intakeDate} {log.intakeTime}
                   </p>
@@ -95,6 +108,16 @@ export function ReportView({ report }: { report: ReportData }) {
                   {risk?.databaseMatch && (
                     <p className="mt-0.5 text-xs text-[#948e9c]">
                       DB 매칭: {risk.databaseMatch.substanceName} · {risk.databaseMatch.wadaClass}
+                    </p>
+                  )}
+                  {item?.interactionWarnings && (
+                    <p className="mt-2 text-xs leading-5" style={{ color: "#ffb4ab" }}>
+                      상호작용/위험 신호: {item.interactionWarnings}
+                    </p>
+                  )}
+                  {item?.sideEffects && (
+                    <p className="mt-1 text-xs leading-5 text-[#e7c365]">
+                      부작용: {item.sideEffects}
                     </p>
                   )}
                   {risks.length > 1 && (

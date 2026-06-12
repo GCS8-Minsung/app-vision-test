@@ -8,6 +8,7 @@ export interface MedicationFormValue {
   itemName: string;
   ingredientName: string;
   dosage: string;
+  intakeAmount: string;
   hospitalName: string;
   conditionName: string;
 }
@@ -142,11 +143,19 @@ export function MedicationForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
           id="dosage"
-          label="용량"
+          label="성분 함량"
           value={value.dosage}
           onChange={(v) => update("dosage", v)}
           badge={<ConfidenceBadge value={confidence?.dosage} />}
         />
+        <Field
+          id="intakeAmount"
+          label="복용량"
+          value={value.intakeAmount}
+          onChange={(v) => update("intakeAmount", v)}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
           id="hospitalName"
           label="병원명"

@@ -1,4 +1,9 @@
 import { BULK_MEDICATION_PRODUCT_DATABASE } from "./medicationSeedBulk";
+import {
+  getBestMedicationNameMatch,
+  isSearchableMedicationMatch,
+  normalizeMedicationName
+} from "./medicationNameMatching";
 
 export interface MedicationIngredient {
   name: string;
@@ -12,6 +17,11 @@ export interface MedicationProductEntry {
   ingredients: MedicationIngredient[];
   dosage?: string;
   form?: string;
+  efficacy?: string;
+  interactionWarnings?: string;
+  sideEffects?: string;
+  externalSourceId?: string;
+  lastSyncedAt?: string;
   sourceNames: string[];
   note: string;
 }
@@ -22,7 +32,7 @@ export interface MedicationSearchResult {
   score: number;
 }
 
-export const MEDICATION_DATABASE_VERSION = "2026.2-product-seed-500-plus";
+export const MEDICATION_DATABASE_VERSION = "2026.3-product-seed-ingredient-resolution";
 
 const CURATED_MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
   {
@@ -224,6 +234,36 @@ const CURATED_MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
     form: "정제",
     sourceNames: ["약학정보원", "의약품안전나라"],
     note: "항히스타민제 제품명 seed"
+  },
+  {
+    id: "med-pharmpain-pro",
+    productName: "팜페인프로연질캡슐",
+    aliases: ["팜페인프로", "팜페인 프로", "pharmpain pro", "pharmpain pro soft cap"],
+    ingredients: [{ name: "덱시부프로펜(KP)", dosage: "300.00mg" }],
+    dosage: "1캡슐당 300.00mg",
+    form: "연질캡슐",
+    sourceNames: ["약학정보원", "의약품안전나라"],
+    note: "제품명 오인식을 줄이기 위한 덱시부프로펜 300mg 제품명 seed"
+  },
+  {
+    id: "med-ezn6-pro",
+    productName: "이지엔6프로연질캡슐",
+    aliases: ["이지엔6프로", "이지엔6 프로", "이지엔 프로"],
+    ingredients: [{ name: "덱시부프로펜(KP)", dosage: "300.00mg" }],
+    dosage: "1캡슐당 300.00mg",
+    form: "연질캡슐",
+    sourceNames: ["의약품안전나라 e약은요", "공공데이터포털"],
+    note: "제품명과 e약은요 복용법에서 덱시부프로펜 1캡슐 함량 보강"
+  },
+  {
+    id: "med-maxibupen-er-300",
+    productName: "맥시부펜이알정300밀리그램",
+    aliases: ["맥시부펜 이알", "맥시부펜이알정", "맥시부펜 300"],
+    ingredients: [{ name: "덱시부프로펜(KP)", dosage: "300.00mg" }],
+    dosage: "1정당 300.00mg",
+    form: "서방정",
+    sourceNames: ["의약품안전나라 e약은요", "공공데이터포털"],
+    note: "제품명과 e약은요 복용법에서 덱시부프로펜 1정 함량 보강"
   }
 ];
 
@@ -232,35 +272,14 @@ export const MEDICATION_PRODUCT_DATABASE: MedicationProductEntry[] = [
   ...BULK_MEDICATION_PRODUCT_DATABASE
 ];
 
-function normalize(value: string): string {
-  return value.toLowerCase().replace(/[-\s()[\]{}·ㆍ.,:：;'"`~…_]/g, "");
-}
-
-function scoreName(query: string, candidate: string): number {
-  const normalizedQuery = normalize(query);
-  const normalizedCandidate = normalize(candidate);
-  if (!normalizedQuery || !normalizedCandidate) return 0;
-  if (normalizedQuery === normalizedCandidate) return 100;
-  if (normalizedCandidate.includes(normalizedQuery)) return 80;
-  if (normalizedQuery.includes(normalizedCandidate)) return 70;
-
-  let score = 0;
-  for (const char of normalizedQuery) {
-    if (normalizedCandidate.includes(char)) score += 1;
-  }
-  return Math.round((score / normalizedQuery.length) * 50);
-}
-
 export function searchMedicationProducts(query: string, limit = 5): MedicationSearchResult[] {
-  const normalizedQuery = normalize(query);
+  const normalizedQuery = normalizeMedicationName(query);
   if (normalizedQuery.length < 2) return [];
 
   return MEDICATION_PRODUCT_DATABASE
     .map((entry) => {
       const names = [entry.productName, ...entry.aliases];
-      const scored = names
-        .map((name) => ({ name, score: scoreName(query, name) }))
-        .sort((first, second) => second.score - first.score)[0];
+      const scored = getBestMedicationNameMatch(query, names);
 
       return {
         entry,
@@ -268,7 +287,7 @@ export function searchMedicationProducts(query: string, limit = 5): MedicationSe
         score: scored.score
       };
     })
-    .filter((result) => result.score >= 45)
+    .filter((result) => isSearchableMedicationMatch(result.score))
     .sort((first, second) => second.score - first.score || first.entry.productName.localeCompare(second.entry.productName))
     .slice(0, limit);
 }

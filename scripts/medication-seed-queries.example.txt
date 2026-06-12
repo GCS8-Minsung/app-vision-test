@@ -1,0 +1,6 @@
+# Copy this file to scripts/medication-seed-queries.txt and add frequently searched product names.
+타이레놀
+콘서타
+슈다페드
+판피린
+벤토린

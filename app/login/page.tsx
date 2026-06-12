@@ -7,7 +7,8 @@ import { ClipboardList, LogIn, Shield } from "lucide-react";
 import { athleteDb, sessionAuth, toAthleteProfile } from "@/lib/athleteDb";
 import { APP_NAME } from "@/lib/constants";
 import { formatPhone } from "@/lib/formatPhone";
-import { storage } from "@/lib/storage";
+import { storage, syncStorageWithSupabase } from "@/lib/storage";
+import type { RegisteredAthlete } from "@/lib/types";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function LoginPage() {
     setPhone(formatPhone(raw));
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     if (!name.trim() || !birthDate || !phone.trim()) {
@@ -29,9 +30,32 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    if (!athleteDb.isSeeded()) athleteDb.seedDemo();
 
-    const athlete = athleteDb.findByCredentials(name, birthDate, phone);
+    let athlete: RegisteredAthlete | null = null;
+    try {
+      const response = await fetch("/api/athletes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "login",
+          name,
+          birthDate,
+          phone
+        })
+      });
+      if (response.ok) {
+        const payload = await response.json() as { athlete?: RegisteredAthlete | null };
+        athlete = payload.athlete ?? null;
+      }
+    } catch {
+      athlete = null;
+    }
+
+    if (!athlete) {
+      if (!athleteDb.isSeeded()) athleteDb.seedDemo();
+      athlete = athleteDb.findByCredentials(name, birthDate, phone);
+    }
+
     if (!athlete) {
       setError("일치하는 선수 정보를 찾을 수 없습니다. 관리자에게 문의하세요.");
       setLoading(false);
@@ -39,6 +63,7 @@ export default function LoginPage() {
     }
     sessionAuth.setAthleteId(athlete.id);
     storage.saveProfile(toAthleteProfile(athlete));
+    await syncStorageWithSupabase(athlete.id);
     router.replace("/dashboard");
   }
 

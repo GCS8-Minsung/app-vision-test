@@ -1,4 +1,5 @@
 import type { MedicationIngredient } from "../medicationDatabase";
+import { resolveMedicationIngredients } from "../medicationIngredientResolver";
 import type { MedicationProductDetail, MedicationProductLookup, MedicationProvider } from "./types";
 
 type MfdsRecord = Record<string, unknown>;
@@ -68,6 +69,12 @@ function toLookup(record: MfdsRecord, query: string, checkedAt: string): Medicat
   const ingredients = parseIngredients(record);
   const dosage = stripTags(valueOf(record, ["CHART", "UD_DOC_DATA", "DOSE", "CAPACITY"]));
   const form = valueOf(record, ["ETC_OTC_NAME", "CLASS_NO_NAME", "FORM_CODE_NAME"]);
+  const resolved = resolveMedicationIngredients({
+    productName,
+    existingIngredients: ingredients,
+    dosageText: dosage,
+    form
+  });
   const normalizedQuery = query.replace(/\s+/g, "");
   const normalizedProduct = productName.replace(/\s+/g, "");
   const score = normalizedProduct.includes(normalizedQuery) ? 90 : 60;
@@ -76,9 +83,9 @@ function toLookup(record: MfdsRecord, query: string, checkedAt: string): Medicat
     id: `mfds-${itemSeq}`,
     productName,
     aliases: [],
-    ingredients,
-    dosage: dosage || undefined,
-    form: form || undefined,
+    ingredients: resolved.ingredients,
+    dosage: resolved.dosage,
+    form: resolved.form,
     sourceNames: ["의약품안전나라", "식품의약품안전처_의약품 제품 허가정보"],
     note: "식약처 의약품 제품 허가정보 API 조회 후보",
     matchedName: productName,

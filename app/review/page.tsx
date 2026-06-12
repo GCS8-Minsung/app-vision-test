@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { IngredientCompositionGraph } from "@/components/IngredientCompositionGraph";
 import { MedicationForm, type MedicationFormValue } from "@/components/MedicationForm";
 import { StepIndicator } from "@/components/StepIndicator";
 import { parseCompoundIngredients } from "@/lib/compoundIngredients";
 import { createId } from "@/lib/ids";
-import { formatIngredients } from "@/lib/medicationDatabase";
+import { formatIngredientContentDosage, formatIngredientNames, inferIntakeAmount } from "@/lib/medicationDisplay";
 import { searchMedicationCandidates, type MedicationLookupClientResult } from "@/lib/medicationLookupClient";
+import { isReliableProductNameMatch } from "@/lib/medicationNameMatching";
 import type { MedicationProductLookup } from "@/lib/medicationProviders/types";
 import { buildOcrFieldConfidence } from "@/lib/ocrConfidence";
 import { getHighestRiskLevel } from "@/lib/riskRanking";
@@ -16,10 +18,11 @@ import { draftStorage, storage } from "@/lib/storage";
 import type { OcrFieldConfidence, VerificationKey } from "@/lib/types";
 
 const EMPTY_FORM: MedicationFormValue = {
-  itemName: "", ingredientName: "", dosage: "", hospitalName: "", conditionName: ""
+  itemName: "", ingredientName: "", dosage: "", intakeAmount: "", hospitalName: "", conditionName: ""
 };
 
-function getOcrSourceLabel(source?: string, confidence?: number): string {
+function getOcrSourceLabel(source?: string, confidence?: number, databaseMatched?: boolean): string {
+  if (source === "gemini-vision" && databaseMatched) return "AI가 이미지에서 찾은 제품명을 의약품 DB와 대조한 초안입니다. 실제 포장·처방전과 다시 확인하세요.";
   if (source === "gemini-vision") return "AI가 이미지에서 자동으로 추출한 초안입니다. 내용을 확인·수정 후 저장하세요.";
   if (source === "local-parser") {
     const score = typeof confidence === "number" ? ` 신뢰도 ${Math.round(confidence)}%` : "";
@@ -39,15 +42,34 @@ export default function ReviewPage() {
   const [lookupMessage, setLookupMessage] = useState("");
   const [pendingLookup, setPendingLookup] = useState(false);
   const [pendingApply, setPendingApply] = useState<MedicationProductLookup | null>(null);
+  const [selectedMedication, setSelectedMedication] = useState<MedicationProductLookup | null>(null);
   const [verifiedFields, setVerifiedFields] = useState<VerificationKey[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const draft = draftStorage.getDraftOcr();
     if (draft) {
-      setValue(draft);
-      setOcrSourceLabel(getOcrSourceLabel(draft.source, draft.confidence));
+      setValue({
+        ...EMPTY_FORM,
+        ...draft,
+        intakeAmount: draft.intakeAmount ?? (draft.matchedMedication
+          ? inferIntakeAmount({
+              productName: draft.matchedMedication.productName,
+              form: draft.matchedMedication.form,
+              dosage: draft.matchedMedication.dosage
+            })
+          : "")
+      });
+      setOcrSourceLabel(getOcrSourceLabel(draft.source, draft.confidence, draft.databaseMatched));
       setConfidence(buildOcrFieldConfidence(draft));
+      if (draft.medicationCandidates?.length) {
+        setLookupResults(draft.medicationCandidates);
+        setLookupStatus(draft.databaseMatched ? "database" : draft.medicationCandidates[0]?.lookupSource.status ?? "database");
+        setLookupMessage(draft.databaseMatched ? "이미지 분석 결과와 DB 후보를 대조했습니다." : "이미지 분석으로 찾은 DB 후보입니다.");
+      }
+      if (draft.matchedMedication) {
+        setSelectedMedication(draft.matchedMedication);
+      }
     }
   }, []);
 
@@ -79,6 +101,29 @@ export default function ReviewPage() {
     };
   }, [value.itemName]);
 
+  useEffect(() => {
+    const best = lookupResults[0];
+    if (!best || selectedMedication || pendingApply) return;
+    if (best.score < 85 || best.ingredients.length === 0) return;
+    if (!isReliableProductNameMatch(value.itemName, best)) return;
+    if (value.ingredientName.trim() || value.dosage.trim()) return;
+
+    const next = {
+      ...value,
+      itemName: best.productName || value.itemName.trim(),
+      ingredientName: formatIngredientNames(best.ingredients),
+      dosage: formatIngredientContentDosage(best.ingredients, best.dosage),
+      intakeAmount: value.intakeAmount.trim() || inferIntakeAmount({
+        productName: best.productName,
+        form: best.form,
+        dosage: best.dosage
+      })
+    };
+    setValue(next);
+    setSelectedMedication(best);
+    setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
+  }, [lookupResults, pendingApply, selectedMedication, value]);
+
   function applyMedicationLookup(result: MedicationProductLookup) {
     if ((value.ingredientName.trim() || value.dosage.trim()) && pendingApply?.id !== result.id) {
       setPendingApply(result);
@@ -87,11 +132,17 @@ export default function ReviewPage() {
 
     const next = {
       ...value,
-      ingredientName: formatIngredients(result.ingredients),
-      dosage: result.dosage ?? value.dosage,
-      itemName: value.itemName.trim() || result.productName
+      ingredientName: result.ingredients.length > 0 ? formatIngredientNames(result.ingredients) : value.ingredientName,
+      dosage: result.ingredients.length > 0 ? formatIngredientContentDosage(result.ingredients, result.dosage) : result.dosage ?? value.dosage,
+      intakeAmount: value.intakeAmount.trim() || inferIntakeAmount({
+        productName: result.productName,
+        form: result.form,
+        dosage: result.dosage
+      }),
+      itemName: result.productName || value.itemName.trim()
     };
     setValue(next);
+    setSelectedMedication(result);
     setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
     setVerifiedFields((current) => Array.from(new Set([...current, "ingredient_checked", "dosage_checked"])));
     setPendingApply(null);
@@ -112,6 +163,14 @@ export default function ReviewPage() {
       dosage: value.dosage.trim() || undefined,
       hospitalName: value.hospitalName.trim() || undefined,
       conditionName: value.conditionName.trim() || undefined,
+      medicationProductId: selectedMedication?.id,
+      ingredients: selectedMedication?.ingredients,
+      efficacy: selectedMedication?.efficacy,
+      interactionWarnings: selectedMedication?.interactionWarnings,
+      sideEffects: selectedMedication?.sideEffects,
+      lookupSourceName: selectedMedication?.lookupSource.providerName,
+      lookupCheckedAt: selectedMedication?.lookupSource.checkedAt,
+      intakeAmount: value.intakeAmount.trim() || undefined,
       userConfirmed: true,
       ocrConfidence: confidence,
       userVerifiedFields: verifiedFields,
@@ -120,10 +179,16 @@ export default function ReviewPage() {
 
     storage.saveExtractedItem(item);
 
-    const substances = parseCompoundIngredients({
-      ingredientName: item.ingredientName,
-      dosage: item.dosage
-    });
+    const substances = item.ingredients?.length
+      ? item.ingredients.map((ingredient) => ({
+          ingredientName: ingredient.name,
+          dosage: ingredient.dosage,
+          sourceText: `${ingredient.name}${ingredient.dosage ? ` ${ingredient.dosage}` : ""}`
+        }))
+      : parseCompoundIngredients({
+          ingredientName: item.ingredientName,
+          dosage: item.dosage
+        });
     const riskIds: { id: string; level: ReturnType<typeof analyzeRisk>["riskLevel"] }[] = [];
 
     if (substances.length > 0) {
@@ -217,11 +282,34 @@ export default function ReviewPage() {
                     <div>
                       <p className="font-semibold text-[#e6e0e9]">{result.productName}</p>
                       <p className="mt-1 text-xs text-[#cbc4d2]">
-                        성분: {formatIngredients(result.ingredients)}
+                        성분: {result.ingredients.length > 0 ? formatIngredientNames(result.ingredients) : "성분 정보 없음"}
                       </p>
                       <p className="mt-0.5 text-xs text-[#cbc4d2]">
-                        용량: {result.dosage ?? "제품 이미지 또는 처방전에서 확인 필요"}
+                        성분 함량: {formatIngredientContentDosage(result.ingredients, result.dosage) || "제품 이미지 또는 처방전에서 확인 필요"}
                       </p>
+                      <p className="mt-0.5 text-xs text-[#cbc4d2]">
+                        복용량 기본값: {inferIntakeAmount({ productName: result.productName, form: result.form, dosage: result.dosage })}
+                      </p>
+                      {result.ingredients.length > 1 && (
+                        <div className="mt-3">
+                          <IngredientCompositionGraph ingredients={result.ingredients} compact />
+                        </div>
+                      )}
+                      {result.efficacy && (
+                        <p className="mt-2 text-xs leading-5 text-[#cbc4d2]">
+                          효능: {result.efficacy}
+                        </p>
+                      )}
+                      {result.interactionWarnings && (
+                        <p className="mt-2 text-xs leading-5" style={{ color: "#ffb4ab" }}>
+                          상호작용/위험 신호: {result.interactionWarnings}
+                        </p>
+                      )}
+                      {result.sideEffects && (
+                        <p className="mt-2 text-xs leading-5 text-[#e7c365]">
+                          부작용: {result.sideEffects}
+                        </p>
+                      )}
                       <p className="mt-0.5 text-xs text-[#948e9c]">
                         매칭: {result.matchedName} · 점수 {result.score}
                       </p>
@@ -244,7 +332,11 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {parseCompoundIngredients({ ingredientName: value.ingredientName, dosage: value.dosage }).length > 1 && (
+        {selectedMedication?.ingredients && selectedMedication.ingredients.length > 1 && (
+          <IngredientCompositionGraph ingredients={selectedMedication.ingredients} />
+        )}
+
+        {parseCompoundIngredients({ ingredientName: value.ingredientName, dosage: value.dosage }).length > 1 && !selectedMedication?.ingredients?.length && (
           <div
             className="rounded-xl p-3 text-sm"
             style={{ background: "#1e262d", border: "1px solid #3d4a56", color: "#cbc4d2" }}
@@ -269,6 +361,7 @@ export default function ReviewPage() {
           onVerifiedChange={setVerifiedFields}
           onChange={(next) => {
             setValue(next);
+            setSelectedMedication(null);
             setConfidence(buildOcrFieldConfidence({ ...next, confidence: undefined }));
           }}
           onSubmit={handleSubmit}

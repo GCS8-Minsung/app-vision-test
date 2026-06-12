@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ReportView } from "@/components/ReportView";
 import { RISK_LABELS } from "@/lib/constants";
 import { buildReportData } from "@/lib/report";
-import { storage } from "@/lib/storage";
+import { storage, syncStorageWithSupabase } from "@/lib/storage";
 import type { ReportData, RiskLevel } from "@/lib/types";
 
 function parseDays(value: string | null): 7 | 14 | 30 {
@@ -23,19 +23,31 @@ export function ReportClient() {
   const [riskFilter, setRiskFilter] = useState<RiskLevel | "all">("all");
 
   useEffect(() => {
-    const profile = storage.getProfile();
-    if (!profile) return;
-    setReport(
-      buildReportData({
-        profile,
-        items: storage.getExtractedItems(),
-        risks: storage.getRiskChecks(),
-        logs: storage.getIntakeLogs(),
-        uploads: storage.getUploads(),
-        substances: storage.getExtractedSubstances(),
-        days: parseDays(searchParams?.get("days") ?? null)
-      })
-    );
+    let cancelled = false;
+
+    async function load() {
+      const profile = storage.getProfile();
+      if (!profile) return;
+      await syncStorageWithSupabase(profile.id);
+      if (cancelled) return;
+      const hydratedProfile = storage.getProfile() ?? profile;
+      setReport(
+        buildReportData({
+          profile: hydratedProfile,
+          items: storage.getExtractedItems(),
+          risks: storage.getRiskChecks(),
+          logs: storage.getIntakeLogs(),
+          uploads: storage.getUploads(),
+          substances: storage.getExtractedSubstances(),
+          days: parseDays(searchParams?.get("days") ?? null)
+        })
+      );
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams]);
 
   const visibleReport = report
@@ -59,15 +71,22 @@ export function ReportClient() {
   function downloadCsv() {
     if (!visibleReport) return;
     const rows = [
-      ["날짜", "시간", "약 이름", "성분명", "용량", "위험 상태", "사용자 확인"].map(toCsvValue).join(","),
+      ["날짜", "시간", "약 이름", "성분명", "성분 함량", "복용량", "위험 상태", "상호작용/위험 신호", "부작용", "사용자 확인"].map(toCsvValue).join(","),
       ...visibleReport.items.map(({ log, item, risk, substances }) =>
         [
           log.intakeDate,
           log.intakeTime,
           item?.itemName ?? "",
-          substances.length > 0 ? substances.map((substance) => substance.ingredientName).join(" + ") : item?.ingredientName ?? "",
-          log.dosage || item?.dosage || "",
+          item?.ingredients?.length
+            ? item.ingredients.map((ingredient) => ingredient.name).join(" + ")
+            : substances.length > 0
+              ? substances.map((substance) => substance.ingredientName).join(" + ")
+              : item?.ingredientName ?? "",
+          item?.dosage || log.dosage || "",
+          log.intakeAmount || item?.intakeAmount || "",
           risk ? RISK_LABELS[risk.riskLevel] : "",
+          item?.interactionWarnings ?? "",
+          item?.sideEffects ?? "",
           item?.userVerifiedFields?.length ? String(item.userVerifiedFields.length) : "0"
         ].map(toCsvValue).join(",")
       )

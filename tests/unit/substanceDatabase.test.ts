@@ -23,6 +23,8 @@ describe("substance database", () => {
   it("finds substance entries by English and Korean names", () => {
     expect(findSubstanceEntry({ itemName: "제품", ingredientName: "testosterone" })?.wadaClass).toBe("S1 동화작용제");
     expect(findSubstanceEntry({ itemName: "제품", ingredientName: "프레드니솔론" })?.wadaClass).toBe("S9 글루코코르티코이드");
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "budesonide" })?.wadaClass).toBe("S9 글루코코르티코이드");
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "fluticasone propionate" })?.primaryName).toBe("fluticasone");
   });
 
   it("keeps caffeine as a candidate requiring final confirmation", () => {
@@ -39,5 +41,12 @@ describe("substance database", () => {
     expect(findSubstanceEntry({ itemName: "콩코르정", ingredientName: "" })?.primaryName).toBe("bisoprolol");
     expect(findSubstanceEntry({ itemName: "울트라셋정", ingredientName: "" })?.primaryName).toBe("tramadol");
     expect(findSubstanceEntry({ itemName: "판피린큐", ingredientName: "" })?.primaryName).toBe("methylephedrine");
+  });
+
+  it("covers KADA introduction examples and WADA monitoring entries", () => {
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "trimetoquinol" })?.primaryName).toBe("tretoquinol");
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "phentermine" })?.riskLevel).toBe("high_risk_candidate");
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "timolol" })?.wadaClass).toBe("P1 베타차단제");
+    expect(findSubstanceEntry({ itemName: "제품", ingredientName: "codeine" })?.riskLevel).toBe("confirmed_candidate");
   });
 });

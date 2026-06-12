@@ -1,11 +1,18 @@
+import type { MedicationProductLookup } from "./medicationProviders/types";
+
 export interface MedicationOcrResult {
   itemName: string;
   ingredientName: string;
   dosage: string;
+  intakeAmount?: string;
   hospitalName: string;
   conditionName: string;
   rawText?: string;
   confidence?: number;
+  candidateProductNames?: string[];
+  matchedMedication?: MedicationProductLookup;
+  medicationCandidates?: MedicationProductLookup[];
+  databaseMatched?: boolean;
   source: "local-parser" | "filename-fallback" | "empty" | "gemini-vision";
 }
 

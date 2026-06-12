@@ -4,7 +4,7 @@ export interface MedicationLookupSource {
   providerName: string;
   sourceUrl: string;
   checkedAt: string;
-  status: "custom" | "cache" | "external" | "seed" | "fallback";
+  status: "custom" | "cache" | "database" | "external" | "seed" | "fallback";
 }
 
 export interface MedicationProductLookup extends MedicationProductEntry {

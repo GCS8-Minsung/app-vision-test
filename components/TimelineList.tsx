@@ -60,8 +60,11 @@ export function TimelineList({
               {item?.ingredientName && (
                 <p className="mt-0.5 text-xs text-[#cbc4d2] truncate">{item.ingredientName}</p>
               )}
-              {log.dosage && (
-                <p className="mt-0.5 text-xs text-[#cbc4d2]">{log.dosage}</p>
+              {(item?.dosage || log.dosage) && (
+                <p className="mt-0.5 text-xs text-[#cbc4d2]">성분 함량: {item?.dosage || log.dosage}</p>
+              )}
+              {(log.intakeAmount || item?.intakeAmount) && (
+                <p className="mt-0.5 text-xs text-[#cbc4d2]">복용량: {log.intakeAmount || item?.intakeAmount}</p>
               )}
             </div>
 

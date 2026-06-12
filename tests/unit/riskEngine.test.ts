@@ -10,7 +10,11 @@ describe("analyzeRisk", () => {
     ["슈도에페드린", "needs_check"],
     ["salbutamol", "needs_check"],
     ["prednisolone", "needs_check"],
+    ["budesonide", "needs_check"],
+    ["fluticasone", "needs_check"],
+    ["hydrocortisone", "needs_check"],
     ["caffeine", "confirmed_candidate"],
+    ["codeine", "confirmed_candidate"],
     ["카페인", "confirmed_candidate"]
   ] as const)("%s maps to %s", (ingredientName, expected) => {
     expect(analyzeRisk({ itemName: "테스트 약", ingredientName }).riskLevel).toBe(expected);

@@ -2,22 +2,13 @@
 
 import { customMedicationProducts } from "./customMedicationProducts";
 import { medicationLookupCache } from "./medicationLookupCache";
+import { dedupeMedicationLookups } from "./medicationNameMatching";
 import type { MedicationProductLookup } from "./medicationProviders/types";
 
 export interface MedicationLookupClientResult {
   results: MedicationProductLookup[];
-  status: "custom" | "cache" | "external" | "seed" | "fallback" | "empty" | "error";
+  status: "custom" | "cache" | "database" | "external" | "seed" | "fallback" | "empty" | "error";
   message: string;
-}
-
-function dedupe(results: MedicationProductLookup[]): MedicationProductLookup[] {
-  const map = new Map<string, MedicationProductLookup>();
-  results.forEach((result) => {
-    const key = result.productName.toLowerCase().replace(/\s+/g, "");
-    const previous = map.get(key);
-    if (!previous || result.score > previous.score) map.set(key, result);
-  });
-  return [...map.values()].sort((first, second) => second.score - first.score);
 }
 
 export async function searchMedicationCandidates(query: string, limit = 5): Promise<MedicationLookupClientResult> {
@@ -32,7 +23,7 @@ export async function searchMedicationCandidates(query: string, limit = 5): Prom
   const cached = medicationLookupCache.get(trimmed);
   if (cached) {
     return {
-      results: dedupe([...custom, ...cached]).slice(0, limit),
+      results: dedupeMedicationLookups([...custom, ...cached]).slice(0, limit),
       status: custom.length > 0 ? "custom" : "cache",
       message: custom.length > 0 ? "사용자 보강 DB와 캐시 후보를 함께 표시합니다." : "캐시된 검색 후보입니다."
     };
@@ -44,7 +35,7 @@ export async function searchMedicationCandidates(query: string, limit = 5): Prom
     const payload = await response.json() as { results?: MedicationProductLookup[]; status?: MedicationLookupClientResult["status"]; message?: string };
     const remote = payload.results ?? [];
     medicationLookupCache.set(trimmed, remote);
-    const merged = dedupe([...custom, ...remote]).slice(0, limit);
+    const merged = dedupeMedicationLookups([...custom, ...remote]).slice(0, limit);
 
     return {
       results: merged,

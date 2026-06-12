@@ -54,14 +54,15 @@ test("happy path", async ({ page }) => {
   await expect(page).toHaveURL(/\/review/);
   await page.getByLabel("약 이름/제품명").fill("콘서타정");
   await page.getByLabel("성분명").fill("methylphenidate");
-  await page.getByLabel("용량", { exact: true }).fill("18mg");
+  await page.getByLabel("성분 함량", { exact: true }).fill("18mg");
+  await page.getByLabel("복용량", { exact: true }).fill("1정");
   await page.getByTestId("review-submit").click();
 
   await expect(page).toHaveURL(/\/result/);
   await expect(page.getByText("고위험 후보").first()).toBeVisible();
   await page.getByTestId("intake-status-taken").click();
   await page.getByTestId("competition-period-checkbox").check();
-  await expect(page.getByLabel("용량", { exact: true })).toHaveValue("18mg");
+  await expect(page.getByLabel("복용량", { exact: true })).toHaveValue("1정");
   await page.getByTestId("intake-save").click();
 
   await expect(page).toHaveURL(/\/dashboard/);
@@ -118,9 +119,9 @@ test("product-name lookup fills ingredient and dosage candidates", async ({ page
 
   await expect(page).toHaveURL(/\/review/);
   await expect(page.getByText("타이레놀8시간이알서방정")).toBeVisible();
-  await page.getByTestId("apply-medication-med-tylenol-er-650").click();
-  await expect(page.getByLabel("성분명")).toHaveValue("acetaminophen 650mg");
-  await expect(page.getByLabel("용량", { exact: true })).toHaveValue("1정당 650mg");
+  await expect(page.getByLabel("성분명")).toHaveValue("acetaminophen");
+  await expect(page.getByLabel("성분 함량", { exact: true })).toHaveValue("650mg");
+  await expect(page.getByLabel("복용량", { exact: true })).toHaveValue("1정");
   await page.getByTestId("review-submit").click();
 
   await expect(page).toHaveURL(/\/result/);
@@ -129,7 +130,7 @@ test("product-name lookup fills ingredient and dosage candidates", async ({ page
   await page.getByTestId("intake-save").click();
   await expect(page).toHaveURL(/\/dashboard/);
   await page.goto("/report?days=7");
-  await expect(page.getByTestId("report-view")).toContainText("타이레놀 이알");
+  await expect(page.getByTestId("report-view")).toContainText("타이레놀8시간이알서방정");
   await expect(page.getByTestId("report-view")).toContainText("acetaminophen");
 });
 

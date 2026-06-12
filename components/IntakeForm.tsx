@@ -23,15 +23,18 @@ const OPTIONS: { status: IntakeStatus; testId: string }[] = [
 
 export function IntakeForm({
   defaultDosage,
+  defaultIntakeAmount,
   onSave
 }: {
   defaultDosage?: string;
+  defaultIntakeAmount?: string;
   onSave: (value: {
     intakeStatus: IntakeStatus;
     isCompetitionPeriod: boolean;
     intakeDate: string;
     intakeTime: string;
     dosage: string;
+    intakeAmount: string;
     note: string;
   }) => void;
 }) {
@@ -39,12 +42,20 @@ export function IntakeForm({
   const [date, setDate] = useState(today());
   const [time, setTime] = useState(currentTime());
   const [isCompetitionPeriod, setIsCompetitionPeriod] = useState(false);
-  const [dosage, setDosage] = useState(defaultDosage ?? "");
+  const [intakeAmount, setIntakeAmount] = useState(defaultIntakeAmount ?? defaultDosage ?? "");
   const [note, setNote] = useState("");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    onSave({ intakeStatus: status, isCompetitionPeriod, intakeDate: date, intakeTime: time, dosage, note });
+    onSave({
+      intakeStatus: status,
+      isCompetitionPeriod,
+      intakeDate: date,
+      intakeTime: time,
+      dosage: defaultDosage ?? "",
+      intakeAmount,
+      note
+    });
   }
 
   return (
@@ -147,14 +158,14 @@ export function IntakeForm({
         </div>
       </div>
 
-      {/* Dosage */}
+      {/* Intake amount */}
       <div>
-        <label htmlFor="intakeDosage" className="form-label">용량</label>
+        <label htmlFor="intakeAmount" className="form-label">복용량</label>
         <input
-          id="intakeDosage"
+          id="intakeAmount"
           className="form-input"
-          value={dosage}
-          onChange={(e) => setDosage(e.target.value)}
+          value={intakeAmount}
+          onChange={(e) => setIntakeAmount(e.target.value)}
         />
       </div>
 

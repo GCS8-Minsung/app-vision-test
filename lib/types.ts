@@ -27,6 +27,11 @@ export interface OcrFieldConfidence {
   dosage: "high" | "medium" | "low" | "missing";
 }
 
+export interface MedicationIngredientRecord {
+  name: string;
+  dosage?: string;
+}
+
 export interface AthleteProfile {
   id: string;
   name: string;
@@ -64,6 +69,14 @@ export interface ExtractedItem {
   dosage?: string;
   hospitalName?: string;
   conditionName?: string;
+  medicationProductId?: string;
+  ingredients?: MedicationIngredientRecord[];
+  efficacy?: string;
+  interactionWarnings?: string;
+  sideEffects?: string;
+  lookupSourceName?: string;
+  lookupCheckedAt?: string;
+  intakeAmount?: string;
   userConfirmed: boolean;
   ocrConfidence?: OcrFieldConfidence;
   userVerifiedFields?: VerificationKey[];
@@ -108,6 +121,7 @@ export interface IntakeLog {
   intakeDate: string;
   intakeTime: string;
   dosage?: string;
+  intakeAmount?: string;
   note?: string;
   createdAt: string;
 }

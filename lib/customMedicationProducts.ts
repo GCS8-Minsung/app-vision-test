@@ -1,13 +1,14 @@
 import { STORAGE_KEYS } from "./constants";
+import {
+  getBestMedicationNameMatch,
+  isSearchableMedicationMatch,
+  normalizeMedicationName
+} from "./medicationNameMatching";
 import type { MedicationProductEntry } from "./medicationDatabase";
 import type { CustomMedicationProduct, MedicationProductLookup } from "./medicationProviders/types";
 
 function hasStorage(): boolean {
   return typeof window !== "undefined" && Boolean(window.localStorage);
-}
-
-function normalize(value: string): string {
-  return value.toLowerCase().replace(/[-\s()[\]{}·ㆍ.,:：;'"`~…_]/g, "");
 }
 
 function readProducts(): CustomMedicationProduct[] {
@@ -33,8 +34,8 @@ export const customMedicationProducts = {
   save(input: MedicationProductEntry): CustomMedicationProduct {
     const now = new Date().toISOString();
     const current = readProducts();
-    const normalizedName = normalize(input.productName);
-    const existing = current.find((product) => normalize(product.productName) === normalizedName);
+    const normalizedName = normalizeMedicationName(input.productName);
+    const existing = current.find((product) => normalizeMedicationName(product.productName) === normalizedName);
     const next: CustomMedicationProduct = {
       ...input,
       id: input.id || `custom-${Date.now()}`,
@@ -62,20 +63,18 @@ export const customMedicationProducts = {
   },
 
   search(query: string, limit = 5): MedicationProductLookup[] {
-    const normalizedQuery = normalize(query);
+    const normalizedQuery = normalizeMedicationName(query);
     if (normalizedQuery.length < 2) return [];
     const checkedAt = new Date().toISOString();
 
     return readProducts()
       .map((entry) => {
         const names = [entry.productName, ...entry.aliases];
-        const matchedName = names.find((name) => normalize(name).includes(normalizedQuery)) ?? "";
-        const reverseMatch = names.find((name) => normalizedQuery.includes(normalize(name)));
-        const score = matchedName ? 100 : reverseMatch ? 80 : 0;
+        const match = getBestMedicationNameMatch(query, names);
         return {
           ...entry,
-          matchedName: matchedName || reverseMatch || entry.productName,
-          score,
+          matchedName: match.name || entry.productName,
+          score: match.score,
           lookupSource: {
             providerName: "사용자 보강 DB",
             sourceUrl: "localStorage",
@@ -84,7 +83,7 @@ export const customMedicationProducts = {
           }
         };
       })
-      .filter((result) => result.score > 0)
+      .filter((result) => isSearchableMedicationMatch(result.score))
       .sort((first, second) => second.score - first.score)
       .slice(0, limit);
   }

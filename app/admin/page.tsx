@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { Check, Database, Download, Edit2, Plus, Shield, Trash2, Upload, Users, X } from "lucide-react";
 import { athleteDb } from "@/lib/athleteDb";
-import { ADMIN_PASSCODE, APP_NAME } from "@/lib/constants";
+import { APP_NAME } from "@/lib/constants";
 import { customMedicationProducts } from "@/lib/customMedicationProducts";
 import { formatPhone } from "@/lib/formatPhone";
 import { createId } from "@/lib/ids";
@@ -40,10 +40,85 @@ const S = {
   } as React.CSSProperties,
 };
 
+interface AdminUserOverview {
+  id: string;
+  name: string;
+  birthDate?: string;
+  phone?: string;
+  sport?: string;
+  teamName?: string;
+  source: "registered" | "profile" | "records";
+  counts: {
+    uploads: number;
+    items: number;
+    substances: number;
+    risks: number;
+    intakeLogs: number;
+  };
+  highRiskCount: number;
+  lastLoginAt?: string;
+  lastActivityAt?: string;
+  latestItemName?: string;
+  latestIntakeDate?: string;
+}
+
+interface AdminAccessLog {
+  id: string;
+  eventType: string;
+  subjectId?: string | null;
+  subjectName?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+interface AdminOverview {
+  totals: {
+    registeredUsers: number;
+    activeProfiles: number;
+    uploads: number;
+    extractedItems: number;
+    intakeLogs: number;
+    highRiskChecks: number;
+    medicationProducts: number;
+    adminCustomMedications: number;
+    loginSuccessesToday: number;
+    failedLoginsToday: number;
+    adminLoginsToday: number;
+  };
+  users: AdminUserOverview[];
+  accessLogs: AdminAccessLog[];
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  athlete_login_success: "선수 로그인 성공",
+  athlete_login_failed: "선수 로그인 실패",
+  admin_login_success: "관리자 로그인 성공",
+  admin_login_failed: "관리자 로그인 실패",
+  admin_view: "관리자 화면 조회"
+};
+
+function formatDateTime(value?: string | null): string {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function shortUserAgent(value?: string | null): string {
+  if (!value) return "-";
+  return value.length > 48 ? `${value.slice(0, 48)}...` : value;
+}
+
 export default function AdminPage() {
   const [authed,    setAuthed]    = useState(false);
   const [passcode,  setPasscode]  = useState("");
   const [passError, setPassError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const [athletes,  setAthletes]  = useState<RegisteredAthlete[]>([]);
   const [editing,   setEditing]   = useState<RegisteredAthlete | null>(null);
   const [form,      setForm]      = useState(EMPTY);
@@ -52,26 +127,132 @@ export default function AdminPage() {
   const [medications, setMedications] = useState<CustomMedicationProduct[]>([]);
   const [medicationForm, setMedicationForm] = useState(EMPTY_MEDICATION);
   const [medicationJson, setMedicationJson] = useState("");
+  const [overview, setOverview] = useState<AdminOverview | null>(null);
 
   useEffect(() => {
-    if (authed) {
-      setAthletes(athleteDb.getAll());
-      setMedications(customMedicationProducts.getAll());
-    }
-  }, [authed]);
+    if (!authed) return;
+    let cancelled = false;
 
-  function refresh() { setAthletes(athleteDb.getAll()); }
-  function refreshMedications() { setMedications(customMedicationProducts.getAll()); }
+    async function loadInitialData() {
+      try {
+        const athletesResponse = await fetch("/api/athletes", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "list", passcode })
+        });
+        const medicationsResponse = await fetch("/api/admin-medications", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "list", passcode })
+        });
+
+        if (!athletesResponse.ok || !medicationsResponse.ok) throw new Error("load failed");
+
+        let athletesPayload = await athletesResponse.json() as { athletes: RegisteredAthlete[] };
+        let medicationsPayload = await medicationsResponse.json() as { medications: CustomMedicationProduct[] };
+
+        const localAthletes = athleteDb.getAll();
+        if (localAthletes.length > 0) {
+          const importResponse = await fetch("/api/athletes", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action: "import", passcode, athletes: localAthletes })
+          });
+          if (importResponse.ok) athletesPayload = await importResponse.json() as { athletes: RegisteredAthlete[] };
+        }
+
+        const localMedications = customMedicationProducts.getAll();
+        if (localMedications.length > 0) {
+          const importResponse = await fetch("/api/admin-medications", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action: "import", passcode, medications: localMedications })
+          });
+          if (importResponse.ok) medicationsPayload = await importResponse.json() as { medications: CustomMedicationProduct[] };
+        }
+
+        const overviewResponse = await fetch("/api/admin/activity", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "overview", passcode })
+        });
+        const overviewPayload = overviewResponse.ok ? await overviewResponse.json() as AdminOverview : null;
+
+        if (cancelled) return;
+        setAthletes(athletesPayload.athletes);
+        setMedications(medicationsPayload.medications);
+        setOverview(overviewPayload);
+      } catch {
+        if (!cancelled) setFeedback("Supabase 데이터를 불러오지 못했습니다.");
+      }
+    }
+
+    void loadInitialData();
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, passcode]);
+
+  async function requestAthletes(action: "list" | "save" | "delete" | "seed" | "import", body: Record<string, unknown> = {}) {
+    const response = await fetch("/api/athletes", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action, passcode, ...body })
+    });
+    if (!response.ok) throw new Error("선수 정보를 처리하지 못했습니다.");
+    return response.json() as Promise<{ athletes: RegisteredAthlete[] }>;
+  }
+
+  async function requestMedications(action: "list" | "save" | "import", body: Record<string, unknown> = {}) {
+    const response = await fetch("/api/admin-medications", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action, passcode, ...body })
+    });
+    if (!response.ok) throw new Error("의약품 보강 DB를 처리하지 못했습니다.");
+    return response.json() as Promise<{ medications: CustomMedicationProduct[] }>;
+  }
+
+  async function refreshOverview() {
+    try {
+      const response = await fetch("/api/admin/activity", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "overview", passcode })
+      });
+      if (!response.ok) throw new Error("overview failed");
+      setOverview(await response.json() as AdminOverview);
+    } catch {
+      flash("운영 현황을 새로고침하지 못했습니다.");
+    }
+  }
 
   function flash(msg: string) {
     setFeedback(msg);
     setTimeout(() => setFeedback(""), 3000);
   }
 
-  function handleAuth(e: FormEvent) {
+  async function handleAuth(e: FormEvent) {
     e.preventDefault();
-    if (passcode === ADMIN_PASSCODE) setAuthed(true);
-    else setPassError("비밀번호가 올바르지 않습니다.");
+    setPassError("");
+    setAuthLoading(true);
+    try {
+      const response = await fetch("/api/admin/activity", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "admin_login", passcode })
+      });
+
+      if (!response.ok) {
+        setPassError("비밀번호가 올바르지 않습니다.");
+        return;
+      }
+      setAuthed(true);
+    } catch {
+      setPassError("관리자 인증을 처리하지 못했습니다.");
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
   function openAdd()  { setEditing(null); setForm(EMPTY); setShowForm(true); }
@@ -81,30 +262,52 @@ export default function AdminPage() {
     setShowForm(true);
   }
 
-  function handleSave(e: FormEvent) {
+  async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.birthDate || !form.phone.trim() || !form.sport.trim()) return;
     const now = new Date().toISOString();
-    athleteDb.save({
+    const athlete = {
       id: editing?.id ?? createId("athlete"),
       name: form.name.trim(), birthDate: form.birthDate,
       phone: form.phone.trim(), sport: form.sport.trim(),
       teamName: form.teamName.trim() || undefined,
       createdAt: editing?.createdAt ?? now,
-    });
-    refresh(); setShowForm(false);
-    flash(editing ? "선수 정보가 수정되었습니다." : "새 선수가 추가되었습니다.");
+    };
+
+    try {
+      const payload = await requestAthletes("save", { athlete });
+      setAthletes(payload.athletes);
+      setShowForm(false);
+      void refreshOverview();
+      flash(editing ? "선수 정보가 수정되었습니다." : "새 선수가 추가되었습니다.");
+    } catch {
+      flash("선수 정보를 저장하지 못했습니다.");
+    }
   }
 
-  function handleDelete(id: string) {
-    athleteDb.remove(id); refresh(); flash("선수가 삭제되었습니다.");
+  async function handleDelete(id: string) {
+    try {
+      const payload = await requestAthletes("delete", { id });
+      setAthletes(payload.athletes);
+      void refreshOverview();
+      flash("선수가 삭제되었습니다.");
+    } catch {
+      flash("선수를 삭제하지 못했습니다.");
+    }
   }
 
-  function handleSeed() {
-    athleteDb.seedDemo(); refresh(); flash("데모 데이터 5명이 추가되었습니다.");
+  async function handleSeed() {
+    try {
+      const payload = await requestAthletes("seed");
+      setAthletes(payload.athletes);
+      void refreshOverview();
+      flash("데모 데이터 5명이 추가되었습니다.");
+    } catch {
+      flash("데모 데이터를 추가하지 못했습니다.");
+    }
   }
 
-  function handleMedicationSave(e: FormEvent) {
+  async function handleMedicationSave(e: FormEvent) {
     e.preventDefault();
     if (!medicationForm.productName.trim() || !medicationForm.ingredients.trim()) return;
     const ingredients = medicationForm.ingredients
@@ -120,7 +323,7 @@ export default function AdminPage() {
       })
       .filter((ingredient) => ingredient.name);
 
-    customMedicationProducts.save({
+    const medication = {
       id: createId("custom-med"),
       productName: medicationForm.productName.trim(),
       aliases: medicationForm.aliases.split(",").map((alias) => alias.trim()).filter(Boolean),
@@ -129,25 +332,59 @@ export default function AdminPage() {
       form: medicationForm.form.trim() || undefined,
       sourceNames: medicationForm.sourceNames.split(",").map((source) => source.trim()).filter(Boolean),
       note: medicationForm.note.trim() || "관리자 보강 후보"
-    });
-    setMedicationForm(EMPTY_MEDICATION);
-    refreshMedications();
-    flash("의약품 후보가 보강 DB에 추가되었습니다.");
+    };
+
+    try {
+      const payload = await requestMedications("save", { medication });
+      setMedications(payload.medications);
+      setMedicationForm(EMPTY_MEDICATION);
+      void refreshOverview();
+      flash("의약품 후보가 보강 DB에 추가되었습니다.");
+    } catch {
+      flash("의약품 후보를 저장하지 못했습니다.");
+    }
   }
 
-  function handleMedicationImport() {
+  async function handleMedicationImport() {
     try {
-      const count = customMedicationProducts.importJson(medicationJson);
-      refreshMedications();
-      flash(`${count}개 의약품 후보를 가져왔습니다.`);
+      const medications = JSON.parse(medicationJson) as CustomMedicationProduct[];
+      if (!Array.isArray(medications)) throw new Error("Invalid JSON");
+      const payload = await requestMedications("import", { medications });
+      setMedications(payload.medications);
+      void refreshOverview();
+      flash(`${medications.length}개 의약품 후보를 가져왔습니다.`);
     } catch {
       flash("JSON 형식을 확인해주세요.");
     }
   }
 
   function handleMedicationExport() {
-    setMedicationJson(customMedicationProducts.exportJson());
+    setMedicationJson(JSON.stringify(medications, null, 2));
     flash("의약품 보강 DB를 JSON으로 내보냈습니다.");
+  }
+
+  function handleAccessLogExport() {
+    if (!overview) return;
+    const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const rows = [
+      ["시간", "이벤트", "대상", "IP", "User-Agent"].map(escapeCsv).join(","),
+      ...overview.accessLogs.map((log) =>
+        [
+          log.createdAt,
+          EVENT_LABELS[log.eventType] ?? log.eventType,
+          log.subjectName ?? log.subjectId ?? "",
+          log.ipAddress ?? "",
+          log.userAgent ?? ""
+        ].map(escapeCsv).join(",")
+      )
+    ];
+    const blob = new Blob([`\uFEFF${rows.join("\n")}`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `clean-check-access-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   /* ── Passcode gate ─────────────────────────────── */
@@ -170,8 +407,8 @@ export default function AdminPage() {
               <input id="passcode" type="password" style={S.input} placeholder="비밀번호 입력" value={passcode} onChange={(e) => setPasscode(e.target.value)} required />
               {passError && <p style={{ margin: "6px 0 0", fontSize: 12, color: "#ffb4ab" }}>{passError}</p>}
             </div>
-            <button type="submit" className="primary-button" style={{ width: "100%" }}>
-              <Shield size={15} /> 인증하기
+            <button type="submit" className="primary-button" style={{ width: "100%" }} disabled={authLoading}>
+              <Shield size={15} /> {authLoading ? "확인 중..." : "인증하기"}
             </button>
           </form>
           <p style={{ marginTop: 20, textAlign: "center", fontSize: 12, color: "#494551" }}>
@@ -205,6 +442,108 @@ export default function AdminPage() {
         {feedback && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", marginBottom: 20, background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 12, color: "#34d399", fontSize: 14 }}>
             <Check size={15} /> {feedback}
+          </div>
+        )}
+
+        {/* Operations overview */}
+        {overview ? (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10, marginBottom: 20 }}>
+              {[
+                { label: "전체 사용자", value: overview.users.length, hint: `등록 ${overview.totals.registeredUsers}명` },
+                { label: "오늘 로그인", value: overview.totals.loginSuccessesToday, hint: `실패 ${overview.totals.failedLoginsToday}건` },
+                { label: "복용 기록", value: overview.totals.intakeLogs, hint: `업로드 ${overview.totals.uploads}건` },
+                { label: "고위험 후보", value: overview.totals.highRiskChecks, hint: "전체 위험 체크 기준" },
+                { label: "의약품 DB", value: overview.totals.medicationProducts, hint: `관리자 보강 ${overview.totals.adminCustomMedications}건` }
+              ].map((metric) => (
+                <div key={metric.label} style={{ ...S.card, padding: "14px 16px" }}>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", color: "#948e9c" }}>{metric.label}</p>
+                  <strong style={{ display: "block", marginTop: 6, fontSize: 26, color: "#e6e0e9", lineHeight: 1 }}>{metric.value}</strong>
+                  <span style={{ display: "block", marginTop: 6, fontSize: 12, color: "#cbc4d2" }}>{metric.hint}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ ...S.card, padding: 0, marginBottom: 20, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#e6e0e9" }}>전체 사용자 현황</h2>
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "#948e9c" }}>등록 선수, 온보딩 사용자, 기록 생성 사용자를 통합해 표시합니다.</p>
+                </div>
+                <button type="button" className="secondary-button" style={{ minHeight: 36, padding: "8px 12px", fontSize: 12 }} onClick={refreshOverview}>
+                  새로고침
+                </button>
+              </div>
+
+              <div style={{ maxHeight: 420, overflow: "auto" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(180px, 1.4fr) 110px 150px 150px 80px", gap: 10, minWidth: 760, padding: "11px 20px", fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", color: "#948e9c", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <span>사용자</span>
+                  <span>최근 접속</span>
+                  <span>최근 활동</span>
+                  <span>기록</span>
+                  <span>위험</span>
+                </div>
+                {overview.users.length === 0 ? (
+                  <div style={{ padding: "28px 20px", color: "#948e9c", fontSize: 14 }}>아직 사용자 기록이 없습니다.</div>
+                ) : (
+                  overview.users.map((user) => (
+                    <div key={user.id} style={{ display: "grid", gridTemplateColumns: "minmax(180px, 1.4fr) 110px 150px 150px 80px", gap: 10, alignItems: "center", minWidth: 760, padding: "13px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 700, color: "#e6e0e9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 12, color: "#948e9c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {user.birthDate ?? "-"}
+                          {user.sport ? ` · ${user.sport}` : ""}
+                          {user.teamName ? ` · ${user.teamName}` : ""}
+                        </p>
+                      </div>
+                      <span style={{ fontSize: 12, color: "#cbc4d2" }}>{formatDateTime(user.lastLoginAt)}</span>
+                      <span style={{ fontSize: 12, color: "#cbc4d2" }}>
+                        {formatDateTime(user.lastActivityAt)}
+                        {user.latestItemName ? <span style={{ display: "block", color: "#948e9c" }}>{user.latestItemName}</span> : null}
+                      </span>
+                      <span style={{ fontSize: 12, color: "#cbc4d2" }}>
+                        업로드 {user.counts.uploads} · 약품 {user.counts.items}
+                        <span style={{ display: "block", color: "#948e9c" }}>복용 {user.counts.intakeLogs} · 위험 {user.counts.risks}</span>
+                      </span>
+                      <span style={{ display: "inline-flex", width: "fit-content", borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, background: user.highRiskCount > 0 ? "rgba(255,180,171,0.1)" : "rgba(52,211,153,0.1)", color: user.highRiskCount > 0 ? "#ffb4ab" : "#34d399" }}>
+                        {user.highRiskCount}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div style={{ ...S.card, padding: 0, marginBottom: 20, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#e6e0e9" }}>접속 기록</h2>
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "#948e9c" }}>최근 로그인, 로그인 실패, 관리자 조회 이벤트를 표시합니다.</p>
+                </div>
+                <button type="button" className="secondary-button" style={{ minHeight: 36, padding: "8px 12px", fontSize: 12 }} onClick={handleAccessLogExport}>
+                  <Download size={14} /> CSV
+                </button>
+              </div>
+
+              <div style={{ maxHeight: 340, overflow: "auto" }}>
+                {overview.accessLogs.length === 0 ? (
+                  <div style={{ padding: "28px 20px", color: "#948e9c", fontSize: 14 }}>아직 접속 기록이 없습니다.</div>
+                ) : (
+                  overview.accessLogs.slice(0, 40).map((log) => (
+                    <div key={log.id} style={{ display: "grid", gridTemplateColumns: "120px 150px minmax(110px, 1fr) minmax(140px, 1fr)", gap: 10, minWidth: 720, padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: 12 }}>
+                      <span style={{ color: "#cbc4d2" }}>{formatDateTime(log.createdAt)}</span>
+                      <span style={{ color: log.eventType.includes("failed") ? "#ffb4ab" : "#cfbcff", fontWeight: 700 }}>{EVENT_LABELS[log.eventType] ?? log.eventType}</span>
+                      <span style={{ color: "#e6e0e9" }}>{log.subjectName ?? log.subjectId ?? "-"}</span>
+                      <span style={{ color: "#948e9c" }}>{log.ipAddress ?? "-"} · {shortUserAgent(log.userAgent)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div style={{ ...S.card, padding: 20, marginBottom: 20, color: "#948e9c", fontSize: 14 }}>
+            운영 현황을 불러오는 중입니다.
           </div>
         )}
 

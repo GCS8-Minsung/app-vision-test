@@ -12,7 +12,7 @@ import {
 
 describe("medication product database", () => {
   it("keeps a large searchable built-in seed set", () => {
-    expect(MEDICATION_DATABASE_VERSION).toBe("2026.2-product-seed-500-plus");
+    expect(MEDICATION_DATABASE_VERSION).toBe("2026.3-product-seed-ingredient-resolution");
     expect(BULK_MEDICATION_BLUEPRINT_COUNT).toBeGreaterThanOrEqual(100);
     expect(BULK_MEDICATION_PRODUCT_DATABASE.length).toBeGreaterThanOrEqual(500);
     expect(MEDICATION_PRODUCT_DATABASE.length).toBeGreaterThanOrEqual(520);
@@ -63,5 +63,20 @@ describe("medication product database", () => {
     expect(metformin.entry.dosage).toContain("500mg");
     expect(salbutamol.entry.ingredients[0].name).toBe("salbutamol");
     expect(salbutamol.entry.form).toBe("흡입제");
+  });
+
+  it("finds dexibuprofen product content from curated product names", () => {
+    const [result] = searchMedicationProducts("이지엔6프로");
+
+    expect(result.entry.productName).toBe("이지엔6프로연질캡슐");
+    expect(result.entry.ingredients).toEqual([{ name: "덱시부프로펜(KP)", dosage: "300.00mg" }]);
+    expect(result.entry.dosage).toBe("1캡슐당 300.00mg");
+  });
+
+  it("keeps Pharmpain Pro distinct from other dexibuprofen products", () => {
+    const [result] = searchMedicationProducts("팜페인 프로");
+
+    expect(result.entry.productName).toBe("팜페인프로연질캡슐");
+    expect(result.entry.ingredients).toEqual([{ name: "덱시부프로펜(KP)", dosage: "300.00mg" }]);
   });
 });

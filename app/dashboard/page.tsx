@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { TimelineList } from "@/components/TimelineList";
 import { RISK_LABELS } from "@/lib/constants";
 import { isWithinLastDays } from "@/lib/dateRange";
-import { storage } from "@/lib/storage";
+import { storage, syncStorageWithSupabase } from "@/lib/storage";
 import type { AthleteProfile, ExtractedItem, IntakeLog, RiskCheck } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -18,10 +18,22 @@ export default function DashboardPage() {
   const [logs, setLogs] = useState<IntakeLog[]>([]);
 
   useEffect(() => {
-    setProfile(storage.getProfile());
-    setItems(storage.getExtractedItems());
-    setRisks(storage.getRiskChecks());
-    setLogs(storage.getIntakeLogs());
+    let cancelled = false;
+
+    async function load() {
+      const currentProfile = storage.getProfile();
+      if (currentProfile) await syncStorageWithSupabase(currentProfile.id);
+      if (cancelled) return;
+      setProfile(storage.getProfile());
+      setItems(storage.getExtractedItems());
+      setRisks(storage.getRiskChecks());
+      setLogs(storage.getIntakeLogs());
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const recentLogs = logs.filter((log) => isWithinLastDays(log.intakeDate, 7));
@@ -111,7 +123,10 @@ export default function DashboardPage() {
                   <p className="font-semibold text-[#e6e0e9]">{item?.itemName ?? "이름 없는 기록"}</p>
                   <p className="text-[#cbc4d2]">{log.intakeDate} {log.intakeTime}</p>
                   {(log.dosage || item?.dosage) && (
-                    <p className="text-xs text-[#948e9c]">용량: {log.dosage || item?.dosage}</p>
+                    <p className="text-xs text-[#948e9c]">성분 함량: {item?.dosage || log.dosage}</p>
+                  )}
+                  {(log.intakeAmount || item?.intakeAmount) && (
+                    <p className="text-xs text-[#948e9c]">복용량: {log.intakeAmount || item?.intakeAmount}</p>
                   )}
                 </div>
               );

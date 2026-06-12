@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Disclaimer } from "@/components/Disclaimer";
+import { IngredientCompositionGraph } from "@/components/IngredientCompositionGraph";
 import { IntakeForm } from "@/components/IntakeForm";
 import { RiskBadge } from "@/components/RiskBadge";
 import { OFFICIAL_CHECK_LINKS, RISK_LABELS, VERIFICATION_LABELS } from "@/lib/constants";
@@ -159,6 +160,30 @@ export default function ResultPage() {
           </div>
         )}
 
+        {item.ingredients && item.ingredients.length > 0 && (
+          <IngredientCompositionGraph ingredients={item.ingredients} />
+        )}
+
+        {(item.efficacy || item.interactionWarnings || item.sideEffects) && (
+          <div
+            className="rounded-xl p-3 text-sm leading-6"
+            style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.02em", color: "#cfbcff", marginBottom: 6 }}>
+              의약품 DB 참고 정보
+            </p>
+            {item.efficacy && <p className="text-[#cbc4d2]">효능: {item.efficacy}</p>}
+            {item.interactionWarnings && <p style={{ color: "#ffb4ab" }}>상호작용/위험 신호: {item.interactionWarnings}</p>}
+            {item.sideEffects && <p className="text-[#e7c365]">부작용: {item.sideEffects}</p>}
+            {item.lookupSourceName && (
+              <p className="mt-1 text-xs text-[#948e9c]">
+                출처: {item.lookupSourceName}
+                {item.lookupCheckedAt ? ` · ${new Date(item.lookupCheckedAt).toLocaleString("ko-KR")}` : ""}
+              </p>
+            )}
+          </div>
+        )}
+
         <div
           className="rounded-xl p-3 text-sm leading-6"
           style={{ background: "#1e262d", border: "1px solid #3d4a56" }}
@@ -205,6 +230,7 @@ export default function ResultPage() {
         <h2 className="font-semibold text-[#e6e0e9] mb-4">복용 기록 추가</h2>
         <IntakeForm
           defaultDosage={item.dosage}
+          defaultIntakeAmount={item.intakeAmount}
           onSave={(value) => {
             const profile = storage.getProfile();
             if (!profile) { router.push("/onboarding"); return; }
@@ -216,7 +242,8 @@ export default function ResultPage() {
               isCompetitionPeriod: value.isCompetitionPeriod,
               intakeDate: value.intakeDate,
               intakeTime: value.intakeTime,
-              dosage: value.dosage.trim() || undefined,
+              dosage: item.dosage,
+              intakeAmount: value.intakeAmount.trim() || undefined,
               note: value.note.trim() || undefined,
               createdAt: new Date().toISOString()
             });

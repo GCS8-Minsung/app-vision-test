@@ -41,25 +41,31 @@ export interface SubstanceMatch {
   productAlias?: string;
 }
 
-export const DATABASE_VERSION = "2026.4-expanded-aliases";
+export const DATABASE_VERSION = "2026.5-wada-kada-substance-match";
 
 export const DATABASE_SOURCES: SubstanceDatabaseSource[] = [
   {
     name: "WADA 2026 Prohibited List",
-    url: "https://www.wada-ama.org/en/resources/world-anti-doping-code-and-international-standards/prohibited-list",
-    lastCheckedAt: "2026-06-10",
-    note: "2026년 1월 1일부터 적용되는 WADA 금지목록 기준"
+    url: "https://www.wada-ama.org/sites/default/files/2025-09/2026list_en_final_clean_september_2025.pdf",
+    lastCheckedAt: "2026-06-12",
+    note: "2026년 1월 1일부터 적용되는 WADA 금지목록 PDF 기준"
+  },
+  {
+    name: "WADA 2026 Monitoring Program",
+    url: "https://www.wada-ama.org/sites/default/files/2025-09/2026_list_monitoring_program_en_final_clean_september_2025.pdf",
+    lastCheckedAt: "2026-06-12",
+    note: "금지목록은 아니지만 오남용 추세 파악을 위해 WADA가 모니터링하는 성분 기준"
   },
   {
     name: "KADA 금지목록 소개",
     url: "https://www.kada-ad.or.kr/kada?where=drug/drug_info_method",
-    lastCheckedAt: "2026-06-10",
+    lastCheckedAt: "2026-06-12",
     note: "국내 적용 금지목록 분류와 주요 예시 확인"
   },
   {
     name: "KADA 금지약물 검색서비스",
     url: "https://www.kada-ad.or.kr/kada?where=drug/drug_search",
-    lastCheckedAt: "2026-06-10",
+    lastCheckedAt: "2026-06-12",
     note: "WADA 금지목록과 국내 의약품 정보를 기준으로 검색하는 공식 확인 경로"
   }
 ];
@@ -234,6 +240,30 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
   },
   {
+    id: "s3-vilanterol",
+    primaryName: "vilanterol",
+    aliases: ["vilanterol"],
+    koreanNames: ["빌란테롤"],
+    wadaClass: "S3 베타-2 작용제",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "천식 치료 등에 쓰일 수 있으나 용량과 투여경로 조건 확인이 필요한 성분 후보입니다.",
+    actionTemplate: "처방 용량과 투여경로를 확인한 뒤 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s3-tretoquinol",
+    primaryName: "tretoquinol",
+    aliases: ["tretoquinol", "trimetoquinol"],
+    koreanNames: ["트레토퀴놀", "트리메토퀴놀"],
+    wadaClass: "S3 베타-2 작용제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "일반의약품 또는 종합감기약에서 확인이 필요한 S3 베타-2 작용제 성분 후보입니다.",
+    actionTemplate: "복합 감기약의 전체 성분표를 확인하고 KADA 공식 검색 또는 약사 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
     id: "s4-trimetazidine",
     primaryName: "trimetazidine",
     aliases: ["trimetazidine"],
@@ -278,6 +308,42 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     scope: "all_times",
     riskLevel: "high_risk_candidate",
     reasonTemplate: "WADA/KADA 금지목록의 S4 계열 예시와 일치하는 성분 후보입니다.",
+    actionTemplate: "복용 전 KADA 공식 검색과 의료진 확인을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s4-anastrozole",
+    primaryName: "anastrozole",
+    aliases: ["anastrozole"],
+    koreanNames: ["아나스트로졸"],
+    wadaClass: "S4 호르몬 및 대사 변조제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "WADA/KADA 금지목록의 S4 호르몬 및 대사 변조제 예시와 일치하는 성분 후보입니다.",
+    actionTemplate: "복용 전 KADA 공식 검색과 의료진 확인을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s4-bazedoxifene",
+    primaryName: "bazedoxifene",
+    aliases: ["bazedoxifene"],
+    koreanNames: ["바제독시펜"],
+    wadaClass: "S4 호르몬 및 대사 변조제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "WADA/KADA 금지목록의 S4 호르몬 및 대사 변조제 예시와 일치하는 성분 후보입니다.",
+    actionTemplate: "복용 전 KADA 공식 검색과 의료진 확인을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s4-raloxifene",
+    primaryName: "raloxifene",
+    aliases: ["raloxifene"],
+    koreanNames: ["랄록시펜"],
+    wadaClass: "S4 호르몬 및 대사 변조제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "WADA/KADA 금지목록의 S4 호르몬 및 대사 변조제 예시와 일치하는 성분 후보입니다.",
     actionTemplate: "복용 전 KADA 공식 검색과 의료진 확인을 진행하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
   },
@@ -327,6 +393,42 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     riskLevel: "high_risk_candidate",
     reasonTemplate: "WADA/KADA 금지목록의 S5 이뇨제 계열 예시와 일치하는 성분 후보입니다.",
     actionTemplate: "복용 전 KADA 공식 검색과 전문가 상담을 통해 최종 확인하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s5-acetazolamide",
+    primaryName: "acetazolamide",
+    aliases: ["acetazolamide"],
+    koreanNames: ["아세타졸아미드"],
+    wadaClass: "S5 이뇨제 및 기타 은폐제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "WADA/KADA 금지목록의 S5 이뇨제 및 은폐제 예시와 일치하는 성분 후보입니다.",
+    actionTemplate: "복용 전 KADA 공식 검색과 전문가 상담을 통해 최종 확인하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s5-albumin",
+    primaryName: "albumin",
+    aliases: ["albumin"],
+    koreanNames: ["알부민"],
+    wadaClass: "S5 이뇨제 및 기타 은폐제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "정맥 투여 등 사용 맥락에 따라 확인이 필요한 S5 은폐제 후보입니다.",
+    actionTemplate: "투여경로와 의료적 사용 목적을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s5-mannitol",
+    primaryName: "mannitol",
+    aliases: ["mannitol"],
+    koreanNames: ["만니톨"],
+    wadaClass: "S5 이뇨제 및 기타 은폐제",
+    scope: "all_times",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "정맥 투여 등 사용 맥락에 따라 확인이 필요한 S5 은폐제 후보입니다.",
+    actionTemplate: "투여경로와 의료적 사용 목적을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
   },
   {
@@ -392,12 +494,36 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
   {
     id: "s6-amphetamine",
     primaryName: "amphetamine",
-    aliases: ["amphetamine", "dextroamphetamine", "lisdexamfetamine"],
+    aliases: ["amphetamine", "amfetamine", "dextroamphetamine", "lisdexamfetamine"],
     koreanNames: ["암페타민", "덱스트로암페타민", "리스덱삼페타민"],
     wadaClass: "S6 흥분제",
     scope: "in_competition",
     riskLevel: "high_risk_candidate",
     reasonTemplate: "WADA/KADA 금지목록의 S6 흥분제 계열 예시 또는 유사 성분 후보입니다.",
+    actionTemplate: "경기기간 여부와 TUE 필요 여부를 포함해 KADA 공식 검색과 의료진 확인을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s6-cocaine",
+    primaryName: "cocaine",
+    aliases: ["cocaine"],
+    koreanNames: ["코카인"],
+    wadaClass: "S6 흥분제",
+    scope: "in_competition",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "WADA/KADA 금지목록의 S6 흥분제 예시와 일치하는 성분 후보입니다.",
+    actionTemplate: "경기기간 여부와 KADA 공식 검색, 전문가 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s6-phentermine",
+    primaryName: "phentermine",
+    aliases: ["phentermine"],
+    koreanNames: ["펜터민"],
+    wadaClass: "S6 흥분제",
+    scope: "in_competition",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "다이어트 목적 의약품에서 확인이 필요한 S6 흥분제 성분 후보입니다.",
     actionTemplate: "경기기간 여부와 TUE 필요 여부를 포함해 KADA 공식 검색과 의료진 확인을 진행하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
   },
@@ -430,6 +556,42 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     primaryName: "fentanyl",
     aliases: ["fentanyl"],
     koreanNames: ["펜타닐"],
+    wadaClass: "S7 마약",
+    scope: "in_competition",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "경기기간 중 확인이 필요한 S7 마약성 진통제 성분 후보입니다.",
+    actionTemplate: "복용 전 경기기간 여부와 KADA 공식 검색, 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s7-diamorphine",
+    primaryName: "diamorphine",
+    aliases: ["diamorphine", "heroin"],
+    koreanNames: ["디아모르핀", "헤로인"],
+    wadaClass: "S7 마약",
+    scope: "in_competition",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "경기기간 중 확인이 필요한 S7 마약성 성분 후보입니다.",
+    actionTemplate: "복용 전 경기기간 여부와 KADA 공식 검색, 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s7-oxycodone",
+    primaryName: "oxycodone",
+    aliases: ["oxycodone"],
+    koreanNames: ["옥시코돈"],
+    wadaClass: "S7 마약",
+    scope: "in_competition",
+    riskLevel: "high_risk_candidate",
+    reasonTemplate: "경기기간 중 확인이 필요한 S7 마약성 진통제 성분 후보입니다.",
+    actionTemplate: "복용 전 경기기간 여부와 KADA 공식 검색, 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s7-pethidine",
+    primaryName: "pethidine",
+    aliases: ["pethidine", "meperidine"],
+    koreanNames: ["페티딘", "메페리딘"],
     wadaClass: "S7 마약",
     scope: "in_competition",
     riskLevel: "high_risk_candidate",
@@ -488,14 +650,158 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
   {
     id: "s9-triamcinolone",
     primaryName: "triamcinolone",
-    aliases: ["triamcinolone"],
-    koreanNames: ["트리암시놀론"],
+    aliases: ["triamcinolone", "triamcinolone acetonide"],
+    koreanNames: ["트리암시놀론", "트리암시놀론아세토니드"],
     wadaClass: "S9 글루코코르티코이드",
     scope: "conditional",
     riskLevel: "needs_check",
     reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
     actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s9-betamethasone",
+    primaryName: "betamethasone",
+    aliases: ["betamethasone"],
+    koreanNames: ["베타메타손"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "경구, 주사, 좌약 등 금지 투여경로 여부와 경기기간을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s9-budesonide",
+    primaryName: "budesonide",
+    aliases: ["budesonide"],
+    koreanNames: ["부데소니드"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "흡입·비강·피부 등 국소투여인지, 경구·주사·좌약 투여인지 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s9-fluticasone",
+    primaryName: "fluticasone",
+    aliases: ["fluticasone", "fluticasone propionate", "fluticasone furoate"],
+    koreanNames: ["플루티카손", "플루티카손프로피오네이트", "플루티카손푸로에이트"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "흡입·비강·피부 등 국소투여인지, 경구·주사·좌약 투여인지 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s9-hydrocortisone",
+    primaryName: "hydrocortisone",
+    aliases: ["hydrocortisone"],
+    koreanNames: ["히드로코르티손", "하이드로코르티손"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "경구, 주사, 좌약 등 금지 투여경로 여부와 경기기간을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
+    id: "s9-beclometasone",
+    primaryName: "beclometasone",
+    aliases: ["beclometasone", "beclomethasone"],
+    koreanNames: ["베클로메타손"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-ciclesonide",
+    primaryName: "ciclesonide",
+    aliases: ["ciclesonide"],
+    koreanNames: ["시클레소니드"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-cortisone",
+    primaryName: "cortisone",
+    aliases: ["cortisone"],
+    koreanNames: ["코르티손"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-deflazacort",
+    primaryName: "deflazacort",
+    aliases: ["deflazacort"],
+    koreanNames: ["데플라자코트"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-flunisolide",
+    primaryName: "flunisolide",
+    aliases: ["flunisolide"],
+    koreanNames: ["플루니솔리드"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-fluocortolone",
+    primaryName: "fluocortolone",
+    aliases: ["fluocortolone"],
+    koreanNames: ["플루오코르톨론"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-mometasone",
+    primaryName: "mometasone",
+    aliases: ["mometasone", "mometasone furoate"],
+    koreanNames: ["모메타손", "모메타손푸로에이트"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
+  },
+  {
+    id: "s9-prednisone",
+    primaryName: "prednisone",
+    aliases: ["prednisone"],
+    koreanNames: ["프레드니손"],
+    wadaClass: "S9 글루코코르티코이드",
+    scope: "conditional",
+    riskLevel: "needs_check",
+    reasonTemplate: "투여경로와 경기기간에 따라 확인이 필요한 S9 글루코코르티코이드 성분 후보입니다.",
+    actionTemplate: "투여경로와 복용 시점을 확인하고 KADA 공식 검색 또는 의료진 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Prohibited List"]
   },
   {
     id: "p1-propranolol",
@@ -546,6 +852,18 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
   },
   {
+    id: "p1-timolol",
+    primaryName: "timolol",
+    aliases: ["timolol"],
+    koreanNames: ["티몰롤"],
+    wadaClass: "P1 베타차단제",
+    scope: "specific_sports",
+    riskLevel: "needs_check",
+    reasonTemplate: "특정 종목에서 확인이 필요한 P1 베타차단제 성분 후보입니다.",
+    actionTemplate: "종목별 적용 여부를 KADA 공식 검색 또는 경기단체 규정으로 확인하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지목록 소개"]
+  },
+  {
     id: "common-acetaminophen",
     primaryName: "acetaminophen",
     aliases: ["acetaminophen", "paracetamol"],
@@ -566,6 +884,18 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     scope: "not_listed_or_monitoring",
     riskLevel: "confirmed_candidate",
     reasonTemplate: "현재 MVP seed DB 기준으로 즉시 고위험 후보로 분류되지는 않는 성분입니다. 단, 제품의 다른 성분과 경기기간 조건은 별도 확인이 필요합니다.",
+    actionTemplate: "제품 전체 성분표를 확인하고 KADA 공식 검색 또는 전문가 상담을 통해 최종 확인하세요.",
+    sourceIds: ["WADA 2026 Prohibited List", "KADA 금지약물 검색서비스"]
+  },
+  {
+    id: "common-dexibuprofen",
+    primaryName: "dexibuprofen",
+    aliases: ["dexibuprofen", "s-ibuprofen"],
+    koreanNames: ["덱시부프로펜", "덱시부프로펜(KP)"],
+    wadaClass: "Not currently in prohibited classes",
+    scope: "not_listed_or_monitoring",
+    riskLevel: "confirmed_candidate",
+    reasonTemplate: "현재 WADA/KADA seed DB 기준으로 즉시 고위험 후보로 분류되지는 않는 성분입니다. 단, 제품의 다른 성분과 경기기간 조건은 별도 확인이 필요합니다.",
     actionTemplate: "제품 전체 성분표를 확인하고 KADA 공식 검색 또는 전문가 상담을 통해 최종 확인하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지약물 검색서비스"]
   },
@@ -784,6 +1114,18 @@ export const PROHIBITED_SUBSTANCE_DATABASE: ProhibitedSubstanceEntry[] = [
     reasonTemplate: "현재 MVP seed DB 기준으로 즉시 고위험 후보로 분류되지는 않는 성분입니다. 단, 제품의 다른 성분과 경기기간 조건은 별도 확인이 필요합니다.",
     actionTemplate: "제품 전체 성분표를 확인하고 KADA 공식 검색 또는 전문가 상담을 통해 최종 확인하세요.",
     sourceIds: ["WADA 2026 Prohibited List", "KADA 금지약물 검색서비스"]
+  },
+  {
+    id: "monitoring-codeine",
+    primaryName: "codeine",
+    aliases: ["codeine"],
+    koreanNames: ["코데인"],
+    wadaClass: "Monitoring / not currently in prohibited classes",
+    scope: "not_listed_or_monitoring",
+    riskLevel: "confirmed_candidate",
+    reasonTemplate: "2026 WADA Monitoring Program에서 모니터링되는 마약성 진통제 성분입니다. 현재 금지목록 본문 기준 즉시 고위험 후보로 분류되지는 않지만 최종 확인이 필요합니다.",
+    actionTemplate: "경기기간, 제품 전체 성분표, 처방 목적을 확인하고 KADA 공식 검색 또는 전문가 상담을 진행하세요.",
+    sourceIds: ["WADA 2026 Monitoring Program", "KADA 금지약물 검색서비스"]
   }
 ];
 
